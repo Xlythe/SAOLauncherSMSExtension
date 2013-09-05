@@ -1,8 +1,9 @@
 package com.xlythe.saolauncher.smsextension.ui;
 
-import com.xlythe.saolauncher.smsextension.util.SmsMessageSender;
 import android.app.Activity;
 import android.os.Bundle;
+
+import com.xlythe.saolauncher.smsextension.util.SmsMessageSender;
 
 public class SendSmsActivity extends Activity {
     @Override
@@ -25,7 +26,7 @@ public class SendSmsActivity extends Activity {
             }
         }
 
-        if(phoneNumber != null && message != null && threadId != -1l) {
+        if(phoneNumber != null && message != null) {
             SmsMessageSender sender = new SmsMessageSender(this, new String[] { phoneNumber }, message, threadId);
             sender.sendMessage();
         }

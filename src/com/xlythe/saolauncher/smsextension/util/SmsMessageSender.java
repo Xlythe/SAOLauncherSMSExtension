@@ -18,10 +18,6 @@ package com.xlythe.saolauncher.smsextension.util;
 
 import java.util.ArrayList;
 
-import com.xlythe.saolauncher.smsextension.BuildConfig;
-import com.xlythe.saolauncher.smsextension.R;
-import com.xlythe.saolauncher.smsextension.receiver.SmsReceiver;
-import com.xlythe.saolauncher.smsextension.service.SmsReceiverService;
 import android.app.PendingIntent;
 import android.content.ContentResolver;
 import android.content.ContentValues;
@@ -34,6 +30,11 @@ import android.net.Uri;
 import android.preference.PreferenceManager;
 import android.telephony.SmsManager;
 
+import com.xlythe.saolauncher.smsextension.BuildConfig;
+import com.xlythe.saolauncher.smsextension.R;
+import com.xlythe.saolauncher.smsextension.receiver.SmsReceiver;
+import com.xlythe.saolauncher.smsextension.service.SmsReceiverService;
+
 public class SmsMessageSender {
     private final Context mContext;
     private final int mNumberOfDests;
@@ -41,9 +42,9 @@ public class SmsMessageSender {
     private final String mMessageText;
     private final String mServiceCenter;
     private final long mThreadId;
-    private long mTimestamp;
-    private boolean splitMessage;
-    private boolean requestDeliveryReport;
+    private final long mTimestamp;
+    private final boolean splitMessage;
+    private final boolean requestDeliveryReport;
 
     // Default preference values
     private static final boolean DEFAULT_DELIVERY_REPORT_MODE = false;
@@ -125,37 +126,29 @@ public class SmsMessageSender {
     public static final int MESSAGE_TYPE_SENT = 2;
     public static final int MESSAGE_TYPE_DRAFT = 3;
     public static final int MESSAGE_TYPE_OUTBOX = 4;
-    public static final int MESSAGE_TYPE_FAILED = 5; // for failed outgoing messages
-    public static final int MESSAGE_TYPE_QUEUED = 6; // for messages to send later
+    public static final int MESSAGE_TYPE_FAILED = 5; // for failed outgoing
+                                                     // messages
+    public static final int MESSAGE_TYPE_QUEUED = 6; // for messages to send
+                                                     // later
 
-    private static final String[] SERVICE_CENTER_PROJECTION =
-            new String[] { REPLY_PATH_PRESENT, SERVICE_CENTER, };
+    private static final String[] SERVICE_CENTER_PROJECTION = new String[] { REPLY_PATH_PRESENT, SERVICE_CENTER, };
 
     private static final int COLUMN_REPLY_PATH_PRESENT = 0;
     private static final int COLUMN_SERVICE_CENTER = 1;
 
     // http://android.git.kernel.org/?p=platform/packages/apps/Mms.git;a=blob;f=src/com/android/mms/transaction/MessageStatusReceiver.java
-    public static final String MESSAGING_STATUS_RECEIVED_ACTION =
-            "com.android.mms.transaction.MessageStatusReceiver.MESSAGE_STATUS_RECEIVED";
+    public static final String MESSAGING_STATUS_RECEIVED_ACTION = "com.android.mms.transaction.MessageStatusReceiver.MESSAGE_STATUS_RECEIVED";
     public static final String MESSAGING_PACKAGE_NAME = "com.android.mms";
-    public static final String MESSAGING_STATUS_CLASS_NAME =
-            MESSAGING_PACKAGE_NAME + ".transaction.MessageStatusReceiver";
-    public static final String MESSAGING_RECEIVER_CLASS_NAME =
-            MESSAGING_PACKAGE_NAME + ".transaction.SmsReceiver";
+    public static final String MESSAGING_STATUS_CLASS_NAME = MESSAGING_PACKAGE_NAME + ".transaction.MessageStatusReceiver";
+    public static final String MESSAGING_RECEIVER_CLASS_NAME = MESSAGING_PACKAGE_NAME + ".transaction.SmsReceiver";
     public static final String MESSAGING_CONVO_CLASS_NAME = "com.android.mms.ui.ConversationList";
-    public static final String MESSAGING_COMPOSE_CLASS_NAME =
-            "com.android.mms.ui.ComposeMessageActivity";
-    public static final String SAMSUNG_MESSAGING_COMPOSE_CLASS_NAME =
-            "com.android.mms.ui.ConversationComposer";
-    public static final String[] MESSAGING_APP_ACTIVITIES = {
-        MESSAGING_CONVO_CLASS_NAME,
-        MESSAGING_COMPOSE_CLASS_NAME,
-        SAMSUNG_MESSAGING_COMPOSE_CLASS_NAME,
-    };
+    public static final String MESSAGING_COMPOSE_CLASS_NAME = "com.android.mms.ui.ComposeMessageActivity";
+    public static final String SAMSUNG_MESSAGING_COMPOSE_CLASS_NAME = "com.android.mms.ui.ConversationComposer";
+    public static final String[] MESSAGING_APP_ACTIVITIES = { MESSAGING_CONVO_CLASS_NAME, MESSAGING_COMPOSE_CLASS_NAME, SAMSUNG_MESSAGING_COMPOSE_CLASS_NAME, };
 
     /**
      * Send a message via the system app and system db
-     *
+     * 
      * @param context
      *            the context
      * @param dests
@@ -181,104 +174,82 @@ public class SmsMessageSender {
         SharedPreferences mPrefs = PreferenceManager.getDefaultSharedPreferences(mContext);
 
         // Fetch split message pref
-        splitMessage =
-                mPrefs.getBoolean(
-                        mContext.getString(R.string.pref_split_message_key), DEFAULT_SPLIT_MESSAGE);
+        splitMessage = mPrefs.getBoolean(mContext.getString(R.string.pref_split_message_key), DEFAULT_SPLIT_MESSAGE);
 
         // Fetch delivery report pref
-        requestDeliveryReport =
-                mPrefs.getBoolean(
-                        mContext.getString(R.string.pref_delivery_report_key),
-                        DEFAULT_DELIVERY_REPORT_MODE);
+        requestDeliveryReport = mPrefs.getBoolean(mContext.getString(R.string.pref_delivery_report_key), DEFAULT_DELIVERY_REPORT_MODE);
     }
 
     public boolean sendMessage() {
-        if (!(mThreadId > 0)) {
-            return false;
-        }
-
         // Don't try to send an empty message.
-        if ((mMessageText == null) || (mNumberOfDests == 0)) {
+        if((mMessageText == null) || (mNumberOfDests == 0)) {
             return false;
         }
 
         SmsManager smsManager = SmsManager.getDefault();
 
-        for (int i = 0; i < mNumberOfDests; i++) {
+        for(int i = 0; i < mNumberOfDests; i++) {
             ArrayList<String> messages = smsManager.divideMessage(mMessageText);
             int messageCount = messages.size();
             ArrayList<PendingIntent> deliveryIntents = new ArrayList<PendingIntent>(messageCount);
             ArrayList<PendingIntent> sentIntents = new ArrayList<PendingIntent>(messageCount);
 
-            // Apparently some CDMA networks have a 160 character limit on sending messages (no
-            // multi-part SMS messages), if splitMessage is true we will break apart the messages
+            // Apparently some CDMA networks have a 160 character limit on
+            // sending messages (no
+            // multi-part SMS messages), if splitMessage is true we will break
+            // apart the messages
             // and send separately.
-            if (splitMessage) {
-                for (int j = 0; j < messageCount; j++) {
+            if(splitMessage) {
+                for(int j = 0; j < messageCount; j++) {
                     Uri uri = null;
                     try {
-                        uri =
-                                addMessage(mContext.getContentResolver(), mDests[i], messages
-                                        .get(j),
-                                        null, mTimestamp, requestDeliveryReport, mThreadId);
-                    } catch (SQLiteException e) {
+                        uri = addMessage(mContext.getContentResolver(), mDests[i], messages.get(j), null, mTimestamp, requestDeliveryReport, mThreadId);
+                    }
+                    catch(SQLiteException e) {
                         // TODO: show error here
                         // SqliteWrapper.checkSQLiteException(mContext, e);
                     }
 
                     PendingIntent deliveryReportIntent = null;
-                    if (requestDeliveryReport) {
-                        deliveryReportIntent =
-                                PendingIntent.getBroadcast(mContext, 0,
-                                        new Intent(MESSAGING_STATUS_RECEIVED_ACTION, uri)
-                                                .setClassName(MESSAGING_PACKAGE_NAME,
-                                                        MESSAGING_STATUS_CLASS_NAME), 0);
+                    if(requestDeliveryReport) {
+                        deliveryReportIntent = PendingIntent.getBroadcast(mContext, 0,
+                                new Intent(MESSAGING_STATUS_RECEIVED_ACTION, uri).setClassName(MESSAGING_PACKAGE_NAME, MESSAGING_STATUS_CLASS_NAME), 0);
                     }
 
-                    PendingIntent sentIntent =
-                            PendingIntent.getBroadcast(mContext, 0,
-                                    new Intent(SmsReceiverService.MESSAGE_SENT_ACTION, uri)
-                                            .setClass(mContext, SmsReceiver.class), 0);
+                    PendingIntent sentIntent = PendingIntent.getBroadcast(mContext, 0,
+                            new Intent(SmsReceiverService.MESSAGE_SENT_ACTION, uri).setClass(mContext, SmsReceiver.class), 0);
 
-                    smsManager.sendTextMessage(
-                            mDests[i], mServiceCenter, messages.get(j), sentIntent,
-                            deliveryReportIntent);
+                    smsManager.sendTextMessage(mDests[i], mServiceCenter, messages.get(j), sentIntent, deliveryReportIntent);
                 }
 
-            } else { // Otherwise send as multipart message
+            }
+            else { // Otherwise send as multipart message
                 Uri uri = null;
                 try {
-                    uri =
-                            addMessage(mContext.getContentResolver(), mDests[i], mMessageText,
-                                    null,
-                                    mTimestamp, requestDeliveryReport, mThreadId);
-                } catch (SQLiteException e) {
+                    uri = addMessage(mContext.getContentResolver(), mDests[i], mMessageText, null, mTimestamp, requestDeliveryReport, mThreadId);
+                }
+                catch(SQLiteException e) {
                     // TODO: show error here
                     // SqliteWrapper.checkSQLiteException(mContext, e);
                 }
 
-                for (int j = 0; j < messageCount; j++) {
-                    if (requestDeliveryReport) {
+                for(int j = 0; j < messageCount; j++) {
+                    if(requestDeliveryReport) {
                         deliveryIntents.add(PendingIntent.getBroadcast(mContext, 0,
-                                new Intent(
-                                        MESSAGING_STATUS_RECEIVED_ACTION, uri).setClassName(
-                                        MESSAGING_PACKAGE_NAME, MESSAGING_STATUS_CLASS_NAME),
+                                new Intent(MESSAGING_STATUS_RECEIVED_ACTION, uri).setClassName(MESSAGING_PACKAGE_NAME, MESSAGING_STATUS_CLASS_NAME),
                                 // MessageStatusReceiver.class),
                                 0));
                     }
 
                     sentIntents.add(PendingIntent.getBroadcast(mContext, 0,
-                            new Intent(
-                                    SmsReceiverService.MESSAGE_SENT_ACTION, uri).setClass(
-                                    mContext, SmsReceiver.class),
-                            // .setClassName(MMS_PACKAGE_NAME, MMS_SENT_CLASS_NAME),
+                            new Intent(SmsReceiverService.MESSAGE_SENT_ACTION, uri).setClass(mContext, SmsReceiver.class),
+                            // .setClassName(MMS_PACKAGE_NAME,
+                            // MMS_SENT_CLASS_NAME),
                             // SmsReceiver.class
                             0));
                 }
-                if (BuildConfig.DEBUG)
-                    Log.v("Sending message in " + messageCount + " parts");
-                smsManager.sendMultipartTextMessage(
-                        mDests[i], mServiceCenter, messages, sentIntents, deliveryIntents);
+                if(BuildConfig.DEBUG) Log.v("Sending message in " + messageCount + " parts");
+                smsManager.sendMultipartTextMessage(mDests[i], mServiceCenter, messages, sentIntents, deliveryIntents);
             }
         }
         return false;
@@ -286,37 +257,37 @@ public class SmsMessageSender {
 
     /**
      * Get the service center to use for a reply.
-     *
-     * The rule from TS 23.040 D.6 is that we send reply messages to the service center of the
-     * message to which we're replying, but only if we haven't already replied to that message and
-     * only if <code>TP-Reply-Path</code> was set in that message.
-     *
-     * Therefore, return the service center from the most recent message in the conversation, but
-     * only if it is a message from the other party, and only if <code>TP-Reply-Path</code> is set.
-     * Otherwise, return null.
+     * 
+     * The rule from TS 23.040 D.6 is that we send reply messages to the service
+     * center of the message to which we're replying, but only if we haven't
+     * already replied to that message and only if <code>TP-Reply-Path</code>
+     * was set in that message.
+     * 
+     * Therefore, return the service center from the most recent message in the
+     * conversation, but only if it is a message from the other party, and only
+     * if <code>TP-Reply-Path</code> is set. Otherwise, return null.
      */
     private String getOutgoingServiceCenter(long threadId) {
         Cursor cursor = null;
 
         try {
-            cursor =
-                    mContext.getContentResolver()
-                            .query(SmsPopupUtils.SMS_CONTENT_URI,
-                                    SERVICE_CENTER_PROJECTION, "thread_id = " + threadId, null,
-                                    "date DESC");
+            cursor = mContext.getContentResolver()
+                    .query(SmsPopupUtils.SMS_CONTENT_URI, SERVICE_CENTER_PROJECTION, "thread_id = " + threadId, null, "date DESC");
 
-            // cursor = SqliteWrapper.query(mContext, mContext.getContentResolver(),
+            // cursor = SqliteWrapper.query(mContext,
+            // mContext.getContentResolver(),
             // Sms.CONTENT_URI, SERVICE_CENTER_PROJECTION,
             // "thread_id = " + threadId, null, "date DESC");
 
-            if ((cursor == null) || !cursor.moveToFirst()) {
+            if((cursor == null) || !cursor.moveToFirst()) {
                 return null;
             }
 
             boolean replyPathPresent = (1 == cursor.getInt(COLUMN_REPLY_PATH_PRESENT));
             return replyPathPresent ? cursor.getString(COLUMN_SERVICE_CENTER) : null;
-        } finally {
-            if (cursor != null) {
+        }
+        finally {
+            if(cursor != null) {
                 cursor.close();
             }
         }
@@ -324,7 +295,7 @@ public class SmsMessageSender {
 
     /**
      * Add an SMS to the Out box.
-     *
+     * 
      * @param resolver
      *            the content resolver to use
      * @param address
@@ -339,21 +310,19 @@ public class SmsMessageSender {
      *            whether a delivery report was requested for the message
      * @return the URI for the new message
      */
-    public static Uri addMessage(ContentResolver resolver, String address, String body,
-            String subject, Long date, boolean deliveryReport, long threadId) {
+    public static Uri addMessage(ContentResolver resolver, String address, String body, String subject, Long date, boolean deliveryReport, long threadId) {
 
         /**
          * The content:// style URL for this table
          */
         final Uri CONTENT_URI = Uri.parse("content://sms/outbox");
 
-        return addMessageToUri(resolver, CONTENT_URI, address, body, subject, date, true,
-                deliveryReport, threadId);
+        return addMessageToUri(resolver, CONTENT_URI, address, body, subject, date, true, deliveryReport, threadId);
     }
 
     /**
      * Add an SMS to the given URI with thread_id specified.
-     *
+     * 
      * @param resolver
      *            the content resolver to use
      * @param uri
@@ -374,23 +343,22 @@ public class SmsMessageSender {
      *            the thread_id of the message
      * @return the URI for the new message
      */
-    public static Uri addMessageToUri(ContentResolver resolver, Uri uri, String address,
-            String body,
-            String subject, Long date, boolean read, boolean deliveryReport, long threadId) {
+    public static Uri addMessageToUri(ContentResolver resolver, Uri uri, String address, String body, String subject, Long date, boolean read,
+            boolean deliveryReport, long threadId) {
 
         ContentValues values = new ContentValues(7);
 
         values.put(ADDRESS, address);
-        if (date != null) {
+        if(date != null) {
             values.put(DATE, date);
         }
         values.put(READ, read ? Integer.valueOf(1) : Integer.valueOf(0));
         values.put(SUBJECT, subject);
         values.put(BODY, body);
-        if (deliveryReport) {
+        if(deliveryReport) {
             values.put(STATUS, STATUS_PENDING);
         }
-        if (threadId != -1L) {
+        if(threadId != -1L) {
             values.put(THREAD_ID, threadId);
         }
         return resolver.insert(uri, values);
@@ -398,7 +366,7 @@ public class SmsMessageSender {
 
     /**
      * Move a message to the given folder.
-     *
+     * 
      * @param context
      *            the context to use
      * @param uri
@@ -408,13 +376,13 @@ public class SmsMessageSender {
      * @return true if the operation succeeded
      */
     public static boolean moveMessageToFolder(Context context, Uri uri, int folder) {
-        if (uri == null) {
+        if(uri == null) {
             return false;
         }
 
         boolean markAsUnread = false;
         boolean markAsRead = false;
-        switch (folder) {
+        switch(folder) {
         case MESSAGE_TYPE_INBOX:
         case MESSAGE_TYPE_DRAFT:
             break;
@@ -433,9 +401,10 @@ public class SmsMessageSender {
         ContentValues values = new ContentValues(2);
 
         values.put(TYPE, folder);
-        if (markAsUnread) {
+        if(markAsUnread) {
             values.put(READ, Integer.valueOf(0));
-        } else if (markAsRead) {
+        }
+        else if(markAsRead) {
             values.put(READ, Integer.valueOf(1));
         }
 
@@ -443,7 +412,8 @@ public class SmsMessageSender {
 
         try {
             result = context.getContentResolver().update(uri, values, null, null);
-        } catch (Exception e) {
+        }
+        catch(Exception e) {
 
         }
 
