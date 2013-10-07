@@ -307,7 +307,7 @@ public class SmsMmsMessage {
         else {
             popup = new Intent(context, SaoWarningActivity.class);
         }
-        popup.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_EXCLUDE_FROM_RECENTS);
+        popup.setFlags(Intent.FLAG_ACTIVITY_MULTIPLE_TASK | Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_EXCLUDE_FROM_RECENTS);
         return popup;
     }
 
