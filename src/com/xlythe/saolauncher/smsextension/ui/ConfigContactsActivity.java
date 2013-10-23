@@ -153,7 +153,7 @@ public class ConfigContactsActivity extends FragmentActivity {
         public View newView(Context context, Cursor cursor, ViewGroup parent) {
             final LayoutInflater inflater = LayoutInflater.from(context);
             final TextView view = (TextView) inflater.inflate(
-            		android.R.layout.simple_dropdown_item_1line, parent, false);
+                    android.R.layout.simple_dropdown_item_1line, parent, false);
             view.setText(cursor.getString(COLUMN_DISPLAY_NAME));
             return view;
         }
@@ -294,39 +294,39 @@ public class ConfigContactsActivity extends FragmentActivity {
 
         @Override
         public Loader<Cursor> onCreateLoader(int id, Bundle args) {
-        	switch (id) {
-        	case LOADER_CONTACT_NOTIFICATIONS:
+            switch (id) {
+            case LOADER_CONTACT_NOTIFICATIONS:
                 return new CursorLoader(getActivity(), ContactNotifications.CONTENT_URI,
                         ContactNotifications.PROJECTION_SUMMARY, null, null, null);
-        	case LOADER_SYSTEM_CONTACTS:
-        		return new CursorLoader(getActivity(), Contacts.CONTENT_URI,
-        				CONTACT_PROJECTION, null, null, null);
-        	}
-        	return null;
+            case LOADER_SYSTEM_CONTACTS:
+                return new CursorLoader(getActivity(), Contacts.CONTENT_URI,
+                        CONTACT_PROJECTION, null, null, null);
+            }
+            return null;
         }
 
         @Override
         public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
-        	switch (loader.getId()) {
-        	case LOADER_CONTACT_NOTIFICATIONS:
-        		mContactNotififcationsAdapter.swapCursor(data);
-        		break;
-        	case LOADER_SYSTEM_CONTACTS:
-        		mSystemContactsAdapter.swapCursor(data);
-        		break;
-        	}
+            switch (loader.getId()) {
+            case LOADER_CONTACT_NOTIFICATIONS:
+                mContactNotififcationsAdapter.swapCursor(data);
+                break;
+            case LOADER_SYSTEM_CONTACTS:
+                mSystemContactsAdapter.swapCursor(data);
+                break;
+            }
         }
 
         @Override
         public void onLoaderReset(Loader<Cursor> loader) {
-        	switch (loader.getId()) {
-        	case LOADER_CONTACT_NOTIFICATIONS:
-        		mContactNotififcationsAdapter.swapCursor(null);
-        		break;
-        	case LOADER_SYSTEM_CONTACTS:
-        		mSystemContactsAdapter.swapCursor(null);
-        		break;
-        	}
+            switch (loader.getId()) {
+            case LOADER_CONTACT_NOTIFICATIONS:
+                mContactNotififcationsAdapter.swapCursor(null);
+                break;
+            case LOADER_SYSTEM_CONTACTS:
+                mSystemContactsAdapter.swapCursor(null);
+                break;
+            }
         }
     }
 }

@@ -51,11 +51,11 @@ public class TestNotificationDialogPreference extends DialogPreference {
         if (contactId != null) {
             // Cursor contactCursor = mDbAdapter.fetchContact(Long.valueOf(contactId));
             Cursor contactCursor = context.getContentResolver().query(
-		    		ContactNotifications.buildContactUri(contactId),
-		    		null, null, null, null);
+                    ContactNotifications.buildContactUri(contactId),
+                    null, null, null, null);
             if (contactCursor != null && contactCursor.moveToFirst()) {
                 testPhone = contactCursor.getString(
-                		contactCursor.getColumnIndexOrThrow(ContactNotifications.CONTACT_NAME));
+                        contactCursor.getColumnIndexOrThrow(ContactNotifications.CONTACT_NAME));
                 sysContactId = contactCursor.getString(
                         contactCursor.getColumnIndexOrThrow(ContactNotifications.CONTACT_ID));
                 contactLookup = contactCursor.getString(
@@ -65,8 +65,8 @@ public class TestNotificationDialogPreference extends DialogPreference {
         }
 
         SmsMmsMessage message = new SmsMmsMessage(context, testPhone,
-				context.getString(R.string.pref_notif_test_title), 0, sysContactId, contactLookup,
-				testPhone, 1, 0, SmsMmsMessage.MESSAGE_TYPE_SMS);
+                context.getString(R.string.pref_notif_test_title), 0, sysContactId, contactLookup,
+                testPhone, 1, 0, SmsMmsMessage.MESSAGE_TYPE_SMS);
 
         // Show notification
         ManageNotification.show(context, message, 1, ManageNotification.NOTIFICATION_TEST);

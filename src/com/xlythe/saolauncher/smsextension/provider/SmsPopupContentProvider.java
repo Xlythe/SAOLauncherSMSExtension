@@ -38,7 +38,7 @@ public class SmsPopupContentProvider extends ContentProvider {
         matcher.addURI(authority, quickMessagesPath, QUICKMESSAGES);
         matcher.addURI(authority, quickMessagesPath + "/#", QUICKMESSAGES_ID);
         matcher.addURI(authority, quickMessagesPath + "/" + quickMessagesUpdateOrderPath + "/#",
-        		QUICKMESSAGES_UPDATE_ORDER);
+                QUICKMESSAGES_UPDATE_ORDER);
 
         return matcher;
     }
@@ -107,19 +107,19 @@ public class SmsPopupContentProvider extends ContentProvider {
             break;
         case QUICKMESSAGES:
 
-        	// Fetch max of quick message order column
-        	Cursor c = db.query(SmsPopupDatabase.QUICKMESSAGES_DB_TABLE,
-        			new String[] { "max(" + QuickMessages.ORDER + ")" },
-        			null, null, null, null, null);
+            // Fetch max of quick message order column
+            Cursor c = db.query(SmsPopupDatabase.QUICKMESSAGES_DB_TABLE,
+                    new String[] { "max(" + QuickMessages.ORDER + ")" },
+                    null, null, null, null, null);
 
-        	int highestOrder = SmsPopupDatabase.QUICKMESSAGE_ORDER_DEFAULT;
-        	if (c != null && c.moveToFirst()) {
-        		highestOrder = c.getInt(0) + 1;
-        	}
+            int highestOrder = SmsPopupDatabase.QUICKMESSAGE_ORDER_DEFAULT;
+            if (c != null && c.moveToFirst()) {
+                highestOrder = c.getInt(0) + 1;
+            }
 
-        	if (c != null) {
-        		c.close();
-        	}
+            if (c != null) {
+                c.close();
+            }
 
             values.put(QuickMessages.ORDER, highestOrder);
 
@@ -226,8 +226,8 @@ public class SmsPopupContentProvider extends ContentProvider {
                     qmSelection, qmSelectionArgs);
             break;
         case QUICKMESSAGES_UPDATE_ORDER:
-        	count = updateQuickMessageOrder(db, QuickMessages.getQuickMessageId(uri));
-        	break;
+            count = updateQuickMessageOrder(db, QuickMessages.getQuickMessageId(uri));
+            break;
         default:
             throw new UnsupportedOperationException("Unknown uri: " + uri);
         }
@@ -238,33 +238,33 @@ public class SmsPopupContentProvider extends ContentProvider {
     }
 
     private int updateQuickMessageOrder(SQLiteDatabase db, String id) {
-    	// Fetch minimum of quick message order column
-    	Cursor c = db.query(SmsPopupDatabase.QUICKMESSAGES_DB_TABLE,
-    			new String[] { "min(" + QuickMessages.ORDER + ")" }, null, null, null, null, null);
+        // Fetch minimum of quick message order column
+        Cursor c = db.query(SmsPopupDatabase.QUICKMESSAGES_DB_TABLE,
+                new String[] { "min(" + QuickMessages.ORDER + ")" }, null, null, null, null, null);
 
-    	if (c != null && c.moveToFirst()) {
+        if (c != null && c.moveToFirst()) {
 
-    		// Reduce by one so ordering will place this on top
-    		int lowestOrder = c.getInt(0) - 1;
+            // Reduce by one so ordering will place this on top
+            int lowestOrder = c.getInt(0) - 1;
 
-    		c.close();
+            c.close();
 
-    		// If we're at zero, then we need to update all rows to make some space
-    		if (lowestOrder == 0) {
-    			db.execSQL(SmsPopupDatabase.QUICKMESSAGES_UPDATE_ORDER_SQL);
-    			lowestOrder += SmsPopupDatabase.QUICKMESSAGE_ORDER_DEFAULT;
-    		}
+            // If we're at zero, then we need to update all rows to make some space
+            if (lowestOrder == 0) {
+                db.execSQL(SmsPopupDatabase.QUICKMESSAGES_UPDATE_ORDER_SQL);
+                lowestOrder += SmsPopupDatabase.QUICKMESSAGE_ORDER_DEFAULT;
+            }
 
-    		// Update the row with new ordering value
-    		final ContentValues vals = new ContentValues();
-    		vals.put(QuickMessages.ORDER, lowestOrder);
-    		return db.update(SmsPopupDatabase.QUICKMESSAGES_DB_TABLE,
-    				vals, QuickMessages._ID + " = ?", new String[] { id });
-    	}
+            // Update the row with new ordering value
+            final ContentValues vals = new ContentValues();
+            vals.put(QuickMessages.ORDER, lowestOrder);
+            return db.update(SmsPopupDatabase.QUICKMESSAGES_DB_TABLE,
+                    vals, QuickMessages._ID + " = ?", new String[] { id });
+        }
 
-    	if (c != null) {
-    		c.close();
-    	}
+        if (c != null) {
+            c.close();
+        }
 
         return 0;
     }

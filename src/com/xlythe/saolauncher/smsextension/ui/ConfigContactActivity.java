@@ -80,18 +80,18 @@ public class ConfigContactActivity extends PreferenceActivity {
 
         // Wow is this ugly, should tidy this up.
         if (c == null || c.getCount() != 1) {
-        	// If cursor is null or count is not 1..
-        	if (c != null) {
-        		c.close(); // close up cursor
-        	}
-        	// create new contact notification and return new cursor
+            // If cursor is null or count is not 1..
+            if (c != null) {
+                c.close(); // close up cursor
+            }
+            // create new contact notification and return new cursor
             c = createContact(contactNotificationsUri);
         }
 
         // check cursor again, as we may have created a new contact notification
         if (c == null || c.getCount() != 1) {
 
-        	// something went really wrong now
+            // something went really wrong now
             if (c != null) {
                 c.close(); // close up cursor again
             }

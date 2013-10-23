@@ -190,18 +190,18 @@ public class ConfigQuickMessagesActivity extends ListActivity implements OnEdito
      */
     @Override
     protected Dialog onCreateDialog(int id) {
-    	OnDismissListener dismissListener = new OnDismissListener () {
+        OnDismissListener dismissListener = new OnDismissListener () {
 
-			@Override
-			public void onDismiss(DialogInterface dialog) {
-				Log.v("dismissed!");
-				hideSoftKeyboard();
-			}
-    	};
-    	
+            @Override
+            public void onDismiss(DialogInterface dialog) {
+                Log.v("dismissed!");
+                hideSoftKeyboard();
+            }
+        };
+        
         switch (id) {
         case ADD_DIALOG:
-        	final AlertDialog addDialog = new AlertDialog.Builder(this)
+            final AlertDialog addDialog = new AlertDialog.Builder(this)
                     .setIcon(android.R.drawable.ic_dialog_email)
                     .setTitle(R.string.message_presets_add)
                     .setView(addQMLayout)
@@ -214,19 +214,19 @@ public class ConfigQuickMessagesActivity extends ListActivity implements OnEdito
                     .setNegativeButton(android.R.string.cancel, null)
                     .setOnCancelListener(new OnCancelListener() {
 
-						@Override
-						public void onCancel(DialogInterface dialog) {
-							Log.v("canceled!");
-//							hideSoftKeyboard();							
-						}
-                    	
+                        @Override
+                        public void onCancel(DialogInterface dialog) {
+                            Log.v("canceled!");
+//                            hideSoftKeyboard();                            
+                        }
+                        
                     })
                     .create();
-        	addDialog.setOnDismissListener(dismissListener);
-        	return addDialog;
+            addDialog.setOnDismissListener(dismissListener);
+            return addDialog;
 
         case EDIT_DIALOG:
-        	final AlertDialog editDialog = new AlertDialog.Builder(this)
+            final AlertDialog editDialog = new AlertDialog.Builder(this)
                     .setIcon(android.R.drawable.ic_dialog_email)
                     .setTitle(R.string.message_presets_edit)
                     .setView(editQMLayout)
@@ -245,16 +245,16 @@ public class ConfigQuickMessagesActivity extends ListActivity implements OnEdito
                     .setNegativeButton(android.R.string.cancel, null)
                     .setOnCancelListener(new OnCancelListener() {
 
-						@Override
-						public void onCancel(DialogInterface dialog) {
-							Log.v("canceled!");
-//							hideSoftKeyboard();							
-						}
-                    	
+                        @Override
+                        public void onCancel(DialogInterface dialog) {
+                            Log.v("canceled!");
+//                            hideSoftKeyboard();                            
+                        }
+                        
                     })
                     .create();
-        	editDialog.setOnDismissListener(dismissListener);
-        	return editDialog;
+            editDialog.setOnDismissListener(dismissListener);
+            return editDialog;
         }
         return null;
     }
@@ -314,7 +314,7 @@ public class ConfigQuickMessagesActivity extends ListActivity implements OnEdito
         final ContentValues vals = new ContentValues();
         vals.put(QuickMessages.QUICKMESSAGE, message);
         final int rows = getContentResolver().update(
-        		QuickMessages.buildQuickMessageUri(id), vals, null, null);
+                QuickMessages.buildQuickMessageUri(id), vals, null, null);
         final boolean result = rows == 1 ? true : false;
         if (result) {
             myToast(R.string.message_presets_save_toast);
@@ -353,12 +353,12 @@ public class ConfigQuickMessagesActivity extends ListActivity implements OnEdito
     }
 
     private boolean reorderQuickMessage(String id) {
-    	if (1 == getContentResolver().update(QuickMessages.buildQuickMessageOrderUpdateUri(id), null, null, null)) {
-    		myToast(R.string.message_presets_reorder_toast);
-    		return true;
-    	}
-    	myToast(R.string.message_presets_error_toast);
-    	return false;
+        if (1 == getContentResolver().update(QuickMessages.buildQuickMessageOrderUpdateUri(id), null, null, null)) {
+            myToast(R.string.message_presets_reorder_toast);
+            return true;
+        }
+        myToast(R.string.message_presets_error_toast);
+        return false;
     }
 
     private void myToast(int resId) {
@@ -398,6 +398,6 @@ public class ConfigQuickMessagesActivity extends ListActivity implements OnEdito
      * Hide the soft keyboard
      */
     private void hideSoftKeyboard() {
-    	getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_HIDDEN);
+        getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_HIDDEN);
     }
 }

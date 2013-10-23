@@ -101,7 +101,7 @@ public class SmsPopupUtils {
      * @param context Context.
      * @param lookupKey Contact lookup key.
      * @param address Address (phone number) that will be returned if the contact cannot be
-     * 		found. The address will be formatted before it is returned.
+     *         found. The address will be formatted before it is returned.
      * @return Contact name or null if not found.
      */
     public static ContactIdentification getPersonNameByLookup(Context context, String lookupKey,
@@ -269,7 +269,7 @@ public class SmsPopupUtils {
      * @return Bitmap of the contacts photo (null if none or an error)
      */
     public static Bitmap getPersonPhoto(Context context, final Uri contactUri,
-    		final int thumbSize) {
+            final int thumbSize) {
 
         if (contactUri == null) {
             return null;
@@ -360,7 +360,7 @@ public class SmsPopupUtils {
      */
     @SuppressLint("NewApi")
     public static Bitmap loadContactPhoto(Context context, Uri contactUri,
-    		BitmapFactory.Options options) {
+            BitmapFactory.Options options) {
 
         if (contactUri == null) {
             return null;

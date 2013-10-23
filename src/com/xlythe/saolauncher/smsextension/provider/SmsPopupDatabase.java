@@ -19,9 +19,9 @@ public class SmsPopupDatabase extends SQLiteOpenHelper {
     private static final String DATABASE_NAME = "data";
     private static final int DATABASE_VERSION = 3;
 
-	public static final String QUICKMESSAGES_UPDATE_ORDER_SQL = "update "
-			+ QUICKMESSAGES_DB_TABLE + " set " + QuickMessages.ORDER + "="
-			+ QuickMessages.ORDER + "+" + QUICKMESSAGE_ORDER_DEFAULT;
+    public static final String QUICKMESSAGES_UPDATE_ORDER_SQL = "update "
+            + QUICKMESSAGES_DB_TABLE + " set " + QuickMessages.ORDER + "="
+            + QuickMessages.ORDER + "+" + QUICKMESSAGE_ORDER_DEFAULT;
 
     // Table creation sql statement
     private static final String CONTACTS_DB_CREATE =

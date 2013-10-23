@@ -34,7 +34,7 @@ public class SmsPopupContract {
     }
 
     public static class ContactNotifications implements ContactNotificationsColumns, BaseColumns {
-    	public static final String PATH_CONTACTS = "contacts";
+        public static final String PATH_CONTACTS = "contacts";
         public static final String PATH_CONTACTS_LOOKUP = "contactslookup";
 
         public static final Uri CONTENT_URI =
@@ -94,15 +94,15 @@ public class SmsPopupContract {
     }
 
     public static class QuickMessages implements QuickMessagesColumns, BaseColumns {
-    	public static final String PATH_QUICKMESSAGES = "quickmessages";
+        public static final String PATH_QUICKMESSAGES = "quickmessages";
         public static final String PATH_QUICKMESSAGES_UPDATE_ORDER = "updateorder";
 
         public static final Uri CONTENT_URI =
                 BASE_CONTENT_URI.buildUpon().appendPath(PATH_QUICKMESSAGES).build();
 
         public static final Uri UPDATE_ORDER_URI =
-        		BASE_CONTENT_URI.buildUpon().appendPath(PATH_QUICKMESSAGES)
-        				.appendPath(PATH_QUICKMESSAGES_UPDATE_ORDER).build();
+                BASE_CONTENT_URI.buildUpon().appendPath(PATH_QUICKMESSAGES)
+                        .appendPath(PATH_QUICKMESSAGES_UPDATE_ORDER).build();
 
         public static final String CONTENT_TYPE =
                 "vnd.android.cursor.dir/vnd.everythingandroid.quickmessage";
@@ -116,7 +116,7 @@ public class SmsPopupContract {
         }
 
         public static String getQuickMessageId(Uri uri) {
-        	final List<String> segments = uri.getPathSegments();
+            final List<String> segments = uri.getPathSegments();
             return segments.get(segments.size() - 1);
         }
 

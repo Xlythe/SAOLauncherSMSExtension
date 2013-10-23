@@ -70,8 +70,8 @@ public class SmsPopupUtilsService extends WakefulIntentService {
             if (BuildConfig.DEBUG) Log.v("SMSPopupUtilsService: Updating notification");
             updateNotification(intent);
         } else if (ACTION_SYNC_CONTACT_NAMES.equals(action)) {
-        	if (BuildConfig.DEBUG) Log.v("SMSPopupUtilsService: Sync'ing contact names");
-        	syncContactNames(this);
+            if (BuildConfig.DEBUG) Log.v("SMSPopupUtilsService: Sync'ing contact names");
+            syncContactNames(this);
         }
     }
 
@@ -86,16 +86,16 @@ public class SmsPopupUtilsService extends WakefulIntentService {
      */
     private int syncContactNames(Context context) {
 
-    	final ContentResolver contentResolver = context.getContentResolver();
+        final ContentResolver contentResolver = context.getContentResolver();
         final Cursor cursor = contentResolver.query(
                 ContactNotifications.CONTENT_URI, null, null, null, null);
 
         if (cursor == null) {
-        	return 0;
+            return 0;
         }
 
         if (cursor.getCount() == 0) {
-        	return 0;
+            return 0;
         }
 
         int count = 0;
@@ -123,36 +123,36 @@ public class SmsPopupUtilsService extends WakefulIntentService {
 
             if (contactInfo != null) {
                 boolean runUpdate = false;
-            	ContentValues vals = new ContentValues();
+                ContentValues vals = new ContentValues();
 
-            	if (contactName == null || !contactName.equals(contactInfo.contactName)) {
-            	    vals.put(ContactNotifications.CONTACT_NAME, contactInfo.contactName);
-            	    runUpdate = true;
-            	}
+                if (contactName == null || !contactName.equals(contactInfo.contactName)) {
+                    vals.put(ContactNotifications.CONTACT_NAME, contactInfo.contactName);
+                    runUpdate = true;
+                }
 
-            	if (contactId == null || !contactId.equals(contactInfo.contactId)) {
-            	    vals.put(ContactNotifications.CONTACT_ID, contactInfo.contactId);
-            	    runUpdate = true;
-            	}
+                if (contactId == null || !contactId.equals(contactInfo.contactId)) {
+                    vals.put(ContactNotifications.CONTACT_ID, contactInfo.contactId);
+                    runUpdate = true;
+                }
 
-            	if (contactLookup == null || !contactLookup.equals(contactInfo.contactLookup)) {
-            	    vals.put(ContactNotifications.CONTACT_LOOKUPKEY, contactInfo.contactLookup);
-            	    runUpdate = true;
-            	}
+                if (contactLookup == null || !contactLookup.equals(contactInfo.contactLookup)) {
+                    vals.put(ContactNotifications.CONTACT_LOOKUPKEY, contactInfo.contactLookup);
+                    runUpdate = true;
+                }
 
-            	if (runUpdate && 1 == contentResolver.update(
-            			ContactNotifications.buildContactUri(id), vals, null, null)) {
-            		updatedCount++;
-            	}
+                if (runUpdate && 1 == contentResolver.update(
+                        ContactNotifications.buildContactUri(id), vals, null, null)) {
+                    updatedCount++;
+                }
             }
         }
 
         if (cursor != null) {
-        	cursor.close();
+            cursor.close();
         }
 
         if (BuildConfig.DEBUG)
-        	Log.v("Sync Contacts: " + updatedCount + " / " + count);
+            Log.v("Sync Contacts: " + updatedCount + " / " + count);
 
         return updatedCount;
     }
