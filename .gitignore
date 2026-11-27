@@ -215,3 +215,8 @@ pip-log.txt
 .mr.developer.cfg
 
 .gradle/
+
+# Gradle wrapper files
+gradlew
+gradlew.bat
+**/gradle/wrapper/
