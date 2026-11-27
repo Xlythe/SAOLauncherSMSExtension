@@ -8,7 +8,6 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Bundle;
-import android.provider.Telephony;
 import android.text.InputType;
 import android.text.TextUtils;
 import android.widget.EditText;
@@ -17,7 +16,7 @@ import android.widget.Toast;
 
 import com.xlythe.saolauncher.sms.SmsContract;
 import com.xlythe.saolauncher.smsextension.R;
-import com.xlythe.saolauncher.smsextension.provider.OutgoingMessage;
+import com.xlythe.saolauncher.smsextension.util.SmsMessageSender;
 import com.xlythe.textmanager.text.util.MessageUtils;
 
 import java.util.Arrays;
@@ -69,8 +68,7 @@ public class ComposeMessageActivity extends Activity {
             Set<String> recipients = new HashSet<>(Arrays.asList(to.getText().toString().trim().split("\\s*[;,]\\s*")));
             recipients.remove("");
             if (recipients.isEmpty() || message.length() == 0) return;
-            if (OutgoingMessage.send(this, recipients, message.getText().toString(),
-                    Telephony.Threads.getOrCreateThreadId(this, recipients))) finish();
+            if (SmsMessageSender.send(this, message.getText().toString(), recipients.toArray(new String[0]))) finish();
             else Toast.makeText(this, R.string.quickreply_failed, Toast.LENGTH_SHORT).show();
         });
     }

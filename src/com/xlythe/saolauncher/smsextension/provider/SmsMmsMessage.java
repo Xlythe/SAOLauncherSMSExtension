@@ -533,9 +533,7 @@ public class SmsMmsMessage {
         setMessageRead();
 
         // Send new message
-        SmsMessageSender sender = new SmsMessageSender(context, new String[] { fromAddress }, quickReply, getThreadId());
-
-        return sender.sendMessage();
+        return SmsMessageSender.send(context, quickReply, fromAddress);
     }
 
     // Checks if user is on carrier Sprint and message is a special system

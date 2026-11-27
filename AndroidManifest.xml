@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<manifest xmlns:android="http://schemas.android.com/apk/res/android" xmlns:tools="http://schemas.android.com/tools" >
+<manifest xmlns:android="http://schemas.android.com/apk/res/android" >
 
     <uses-permission android:name="android.permission.READ_SMS" />
     <uses-permission android:name="android.permission.WRITE_SMS" />
@@ -39,36 +39,9 @@
                 <data android:scheme="mms" /><data android:scheme="mmsto" />
             </intent-filter>
         </activity>
-        <receiver android:name="com.xlythe.textmanager.text.receiver.SmsReceiver" tools:node="remove" />
-        <receiver android:name="com.xlythe.textmanager.text.receiver.MmsReceiver" tools:node="remove" />
-        <service android:name="com.xlythe.textmanager.text.service.HeadlessSmsSendService" tools:node="remove" />
-        <service android:name=".service.QuickResponseService" android:exported="true"
-            android:permission="android.permission.SEND_RESPOND_VIA_MESSAGE">
-            <intent-filter>
-                <action android:name="android.intent.action.RESPOND_VIA_MESSAGE" />
-                <category android:name="android.intent.category.DEFAULT" />
-                <data android:scheme="sms" /><data android:scheme="smsto" />
-                <data android:scheme="mms" /><data android:scheme="mmsto" />
-            </intent-filter>
-        </service>
-        <service android:name="com.xlythe.textmanager.text.MmsReceiveService" tools:node="remove" />
-        <receiver android:name=".receiver.LauncherMessageReceiver" android:exported="true"
-            android:permission="android.permission.BROADCAST_SMS">
-            <intent-filter><action android:name="android.provider.Telephony.SMS_DELIVER" /></intent-filter>
+        <receiver android:name=".receiver.LauncherMessageReceiver" android:exported="false">
+            <intent-filter><action android:name="com.xlythe.textmanager.text.ACTION_TEXT_RECEIVED" /></intent-filter>
         </receiver>
-        <receiver android:name=".receiver.MmsDelivery" android:exported="true"
-            android:permission="android.permission.BROADCAST_WAP_PUSH">
-            <intent-filter>
-                <action android:name="android.provider.Telephony.WAP_PUSH_DELIVER" />
-                <data android:mimeType="application/vnd.wap.mms-message" />
-            </intent-filter>
-        </receiver>
-        <receiver android:name=".receiver.MmsDelivery$DownloadResult" android:exported="false" />
-        <receiver android:name=".provider.OutgoingMessage" android:exported="false" />
-        <provider android:name="androidx.core.content.FileProvider" android:authorities="${applicationId}.transfers"
-            android:exported="false" android:grantUriPermissions="true">
-            <meta-data android:name="android.support.FILE_PROVIDER_PATHS" android:resource="@xml/message_files" />
-        </provider>
         <provider android:name=".provider.LauncherMessages" android:authorities="${applicationId}.messages"
             android:permission="com.xlythe.saolauncher.permission.EXTENSION_IPC" android:exported="true" />
         <activity

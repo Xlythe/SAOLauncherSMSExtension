@@ -4,13 +4,11 @@ import android.Manifest;
 import android.app.Activity;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
-import android.telephony.SmsManager;
 import android.text.TextUtils;
 import android.widget.Toast;
 
 import com.xlythe.saolauncher.smsextension.R;
-
-import java.util.ArrayList;
+import com.xlythe.saolauncher.smsextension.util.SmsMessageSender;
 
 public class SendSmsActivity extends Activity {
     @Override
@@ -33,12 +31,7 @@ public class SendSmsActivity extends Activity {
         String number = getIntent().getStringExtra("sms_number");
         String body = getIntent().getStringExtra("sms_msg");
         if (!TextUtils.isEmpty(number) && !TextUtils.isEmpty(body)) {
-            SmsManager sms = SmsManager.getDefault();
-            try {
-                ArrayList<String> parts = sms.divideMessage(body);
-                if (parts.size() == 1) sms.sendTextMessage(number, null, body, null, null);
-                else sms.sendMultipartTextMessage(number, null, parts, null, null);
-            } catch (IllegalArgumentException | SecurityException | UnsupportedOperationException unavailable) {
+            if (!SmsMessageSender.send(this, body, number)) {
                 Toast.makeText(this, R.string.quickreply_failed, Toast.LENGTH_SHORT).show();
             }
         }

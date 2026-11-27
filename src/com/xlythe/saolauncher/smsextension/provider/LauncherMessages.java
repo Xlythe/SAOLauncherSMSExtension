@@ -12,10 +12,10 @@ import android.os.Bundle;
 import android.os.Parcel;
 import android.os.ParcelFileDescriptor;
 import android.os.Parcelable;
-import android.provider.Telephony;
 import android.text.TextUtils;
 
 import com.xlythe.saolauncher.sms.SmsContract;
+import com.xlythe.saolauncher.smsextension.util.SmsMessageSender;
 import com.xlythe.textmanager.text.Contact;
 import com.xlythe.textmanager.text.Text;
 import com.xlythe.textmanager.text.TextManager;
@@ -108,23 +108,21 @@ public class LauncherMessages extends ContentProvider {
                             new ArrayList<>(manager.getMembersExceptMe(Text.fromBytes(extras.getByteArray(SmsContract.TEXT))).get()));
                     break;
                 case SmsContract.READ_THREAD:
-                    markRead(Telephony.Sms.CONTENT_URI, "thread_id", arg);
-                    markRead(Telephony.Mms.CONTENT_URI, "thread_id", arg);
+                    manager.markThreadAsRead(Long.parseLong(arg));
                     break;
                 case SmsContract.READ_SMS:
-                    markRead(Telephony.Sms.CONTENT_URI, "_id", arg);
+                    manager.markSmsAsRead(Long.parseLong(arg));
                     break;
                 case SmsContract.READ_MMS:
-                    markRead(Telephony.Mms.CONTENT_URI, "_id", arg);
+                    manager.markMmsAsRead(Long.parseLong(arg));
                     break;
                 case SmsContract.SEND:
                 case SmsContract.REPLY:
                     String body = extras.getString(SmsContract.BODY);
                     if (TextUtils.isEmpty(body) || TextUtils.isEmpty(arg)) break;
                     Set<String> addresses;
-                    long threadId;
                     if (SmsContract.REPLY.equals(method)) {
-                        threadId = Long.parseLong(arg);
+                        long threadId = Long.parseLong(arg);
                         Thread conversation = manager.getThread(threadId).get();
                         if (conversation == null || conversation.getLatestMessage() == null) break;
                         Set<Contact> contacts = manager.getMembersExceptMe(conversation.getLatestMessage()).get();
@@ -134,22 +132,14 @@ public class LauncherMessages extends ContentProvider {
                         }
                     } else {
                         addresses = Collections.singleton(arg);
-                        threadId = Telephony.Threads.getOrCreateThreadId(getContext(), arg);
                     }
                     if (addresses.isEmpty()) break;
-                    result.putBoolean(SmsContract.RESULT, OutgoingMessage.send(getContext(), addresses, body, threadId));
+                    result.putBoolean(SmsContract.RESULT, SmsMessageSender.send(getContext(), body, addresses.toArray(new String[0])));
                     break;
                 default: throw new IllegalArgumentException("Unknown message operation");
             }
             return result;
         } finally { Binder.restoreCallingIdentity(caller); }
-    }
-
-    private void markRead(Uri table, String key, String id) {
-        ContentValues values = new ContentValues();
-        values.put("read", 1);
-        getContext().getContentResolver().update(table, values, key + "=? AND read=0",
-                new String[]{Long.toString(Long.parseLong(id))});
     }
 
     @Override public String getType(Uri uri) { return null; }
