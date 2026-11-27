@@ -16,8 +16,8 @@ android {
         applicationId 'com.xlythe.saolauncher.smsextension'
         minSdk 23
         targetSdk 37
-        versionCode 8
-        versionName '1.5'
+        versionCode 13
+        versionName '2.5'
     }
     buildFeatures { buildConfig = true }
     sourceSets.main {
@@ -29,6 +29,7 @@ android {
 }
 
 dependencies {
+    implementation 'com.xlythe:android-text-manager:2.0.0'
     implementation 'com.xlythe:viewpager-indicator:2.4.1'
     implementation 'androidx.fragment:fragment:1.9.1'
     implementation 'androidx.loader:loader:1.2.0'

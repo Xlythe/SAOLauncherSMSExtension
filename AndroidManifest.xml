@@ -15,6 +15,10 @@
 
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
 
+    <uses-permission android:name="com.xlythe.saolauncher.permission.EXTENSION_IPC" />
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    <uses-permission android:name="android.permission.CHANGE_NETWORK_STATE" />
     <uses-feature android:name="android.hardware.telephony" />
 
     <permission android:name="com.xlythe.saolauncher.permission.EXTENSION_IPC" android:protectionLevel="signature" />
@@ -24,6 +28,22 @@
         android:hardwareAccelerated="true"
         android:icon="@drawable/smspopup_icon"
         android:label="@string/app_name" >
+        <activity android:name=".ui.MessageSetupActivity" android:exported="true"
+            android:permission="com.xlythe.saolauncher.permission.EXTENSION_IPC" />
+        <activity android:name=".ui.ComposeMessageActivity" android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.SENDTO" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data android:scheme="sms" /><data android:scheme="smsto" />
+                <data android:scheme="mms" /><data android:scheme="mmsto" />
+            </intent-filter>
+        </activity>
+        <receiver android:name=".receiver.LauncherMessageReceiver" android:exported="false">
+            <intent-filter><action android:name="com.xlythe.textmanager.text.ACTION_TEXT_RECEIVED" /></intent-filter>
+        </receiver>
+        <provider android:name=".provider.LauncherMessages" android:authorities="${applicationId}.messages"
+            android:permission="com.xlythe.saolauncher.permission.EXTENSION_IPC" android:exported="true" />
         <activity
             android:name=".ui.SendSmsActivity" android:permission="com.xlythe.saolauncher.permission.EXTENSION_IPC"
             android:label="@string/app_name"

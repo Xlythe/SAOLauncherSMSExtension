@@ -26,6 +26,7 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
 import android.telephony.SmsManager;
+import android.provider.Telephony;
 import android.telephony.SmsMessage;
 import android.telephony.SmsMessage.MessageClass;
 import android.telephony.TelephonyManager;
@@ -354,14 +355,14 @@ public class SmsReceiverService extends WakefulIntentService {
             Uri uri = intent.getData();
 
             if (mResultCode == Activity.RESULT_OK) {
-                SmsMessageSender.moveMessageToFolder(this, uri, SmsMessageSender.MESSAGE_TYPE_SENT);
+                SmsMessageSender.moveMessageToFolder(this, uri, Telephony.Sms.MESSAGE_TYPE_SENT);
             } else if ((mResultCode == SmsManager.RESULT_ERROR_RADIO_OFF) ||
                     (mResultCode == SmsManager.RESULT_ERROR_NO_SERVICE)) {
                 SmsMessageSender.moveMessageToFolder(this, uri,
-                        SmsMessageSender.MESSAGE_TYPE_QUEUED);
+                        Telephony.Sms.MESSAGE_TYPE_QUEUED);
             } else {
                 SmsMessageSender.moveMessageToFolder(this, uri,
-                        SmsMessageSender.MESSAGE_TYPE_FAILED);
+                        Telephony.Sms.MESSAGE_TYPE_FAILED);
             }
         }
 

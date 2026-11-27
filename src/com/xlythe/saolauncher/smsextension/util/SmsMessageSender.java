@@ -16,366 +16,50 @@
  */
 package com.xlythe.saolauncher.smsextension.util;
 
-import java.util.ArrayList;
-
-import android.app.PendingIntent;
-import android.content.ContentResolver;
 import android.content.ContentValues;
 import android.content.Context;
-import android.content.Intent;
 import android.content.SharedPreferences;
-import android.database.Cursor;
-import android.database.sqlite.SQLiteException;
 import android.net.Uri;
 import android.preference.PreferenceManager;
-import android.telephony.SmsManager;
+import android.provider.Telephony;
+import android.text.TextUtils;
+import android.telephony.SubscriptionManager;
+import android.util.Log;
 
-import com.xlythe.saolauncher.smsextension.BuildConfig;
 import com.xlythe.saolauncher.smsextension.R;
-import com.xlythe.saolauncher.smsextension.receiver.MessageEventReceiver;
-import com.xlythe.saolauncher.smsextension.receiver.SmsReceiver;
-import com.xlythe.saolauncher.smsextension.service.SmsReceiverService;
+import com.xlythe.textmanager.text.TextManager;
 
-public class SmsMessageSender {
-    private final Context mContext;
-    private final int mNumberOfDests;
-    private final String[] mDests;
-    private final String mMessageText;
-    private final String mServiceCenter;
-    private final long mThreadId;
-    private final long mTimestamp;
-    private final boolean splitMessage;
-    private final boolean requestDeliveryReport;
+public final class SmsMessageSender {
+    private SmsMessageSender() {}
 
-    // Default preference values
-    private static final boolean DEFAULT_DELIVERY_REPORT_MODE = false;
-    private static final boolean DEFAULT_SPLIT_MESSAGE = false;
+    public static boolean send(Context context, String body, String... addresses) {
+        return send(context, body, SubscriptionManager.INVALID_SUBSCRIPTION_ID, addresses);
+    }
 
-    // http://android.git.kernel.org/?p=platform/frameworks/base.git;a=blob;f=core/java/android/provider/Telephony.java
-    public static final String REPLY_PATH_PRESENT = "reply_path_present";
-    public static final String SERVICE_CENTER = "service_center";
-    // public static final String DATE = "date";
-    /**
-     * The thread ID of the message
-     * <P>
-     * Type: INTEGER
-     * </P>
-     */
-    public static final String THREAD_ID = "thread_id";
+    public static boolean send(Context context, String body, int subscription, String... addresses) {
+        if (TextUtils.isEmpty(body) || addresses.length == 0) return false;
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
+        try {
+            TextManager.getInstance(context).send(body)
+                    .usingSubscription(subscription)
+                    .separateSmsParts(prefs.getBoolean(context.getString(R.string.pref_split_message_key), false))
+                    .requestSmsDeliveryReports(prefs.getBoolean(context.getString(R.string.pref_delivery_report_key), false))
+                    .to(addresses);
+            return true;
+        } catch (IllegalArgumentException | IllegalStateException | SecurityException unavailable) {
+            Log.w("Messages", "Could not queue message", unavailable);
+            return false;
+        }
+    }
 
-    /**
-     * The address of the other party
-     * <P>
-     * Type: TEXT
-     * </P>
-     */
-    public static final String ADDRESS = "address";
-
-    /**
-     * The person ID of the sender
-     * <P>
-     * Type: INTEGER (long)
-     * </P>
-     */
-    public static final String PERSON_ID = "person";
-
-    /**
-     * The date the message was sent
-     * <P>
-     * Type: INTEGER (long)
-     * </P>
-     */
-    public static final String DATE = "date";
-
-    /**
-     * Has the message been read
-     * <P>
-     * Type: INTEGER (boolean)
-     * </P>
-     */
-    public static final String READ = "read";
-
-    /**
-     * The TP-Status value for the message, or -1 if no status has been received
-     */
-    public static final String STATUS = "status";
-    public static final int STATUS_NONE = -1;
-    public static final int STATUS_COMPLETE = 0;
-    public static final int STATUS_PENDING = 64;
-    public static final int STATUS_FAILED = 128;
-
-    /**
-     * The subject of the message, if present
-     * <P>
-     * Type: TEXT
-     * </P>
-     */
-    public static final String SUBJECT = "subject";
-
-    /**
-     * The body of the message
-     * <P>
-     * Type: TEXT
-     * </P>
-     */
-    public static final String BODY = "body";
-
-    public static final String TYPE = "type";
-
-    public static final int MESSAGE_TYPE_ALL = 0;
-    public static final int MESSAGE_TYPE_INBOX = 1;
-    public static final int MESSAGE_TYPE_SENT = 2;
-    public static final int MESSAGE_TYPE_DRAFT = 3;
-    public static final int MESSAGE_TYPE_OUTBOX = 4;
-    public static final int MESSAGE_TYPE_FAILED = 5; // for failed outgoing
-                                                     // messages
-    public static final int MESSAGE_TYPE_QUEUED = 6; // for messages to send
-                                                     // later
-
-    private static final String[] SERVICE_CENTER_PROJECTION = new String[] { REPLY_PATH_PRESENT, SERVICE_CENTER, };
-
-    private static final int COLUMN_REPLY_PATH_PRESENT = 0;
-    private static final int COLUMN_SERVICE_CENTER = 1;
-
-    // http://android.git.kernel.org/?p=platform/packages/apps/Mms.git;a=blob;f=src/com/android/mms/transaction/MessageStatusReceiver.java
-    public static final String MESSAGING_STATUS_RECEIVED_ACTION = "com.android.mms.transaction.MessageStatusReceiver.MESSAGE_STATUS_RECEIVED";
     public static final String MESSAGING_PACKAGE_NAME = "com.android.mms";
-    public static final String MESSAGING_STATUS_CLASS_NAME = MESSAGING_PACKAGE_NAME + ".transaction.MessageStatusReceiver";
     public static final String MESSAGING_RECEIVER_CLASS_NAME = MESSAGING_PACKAGE_NAME + ".transaction.SmsReceiver";
     public static final String MESSAGING_CONVO_CLASS_NAME = "com.android.mms.ui.ConversationList";
     public static final String MESSAGING_COMPOSE_CLASS_NAME = "com.android.mms.ui.ComposeMessageActivity";
     public static final String SAMSUNG_MESSAGING_COMPOSE_CLASS_NAME = "com.android.mms.ui.ConversationComposer";
     public static final String[] MESSAGING_APP_ACTIVITIES = { MESSAGING_CONVO_CLASS_NAME, MESSAGING_COMPOSE_CLASS_NAME, SAMSUNG_MESSAGING_COMPOSE_CLASS_NAME, };
 
-    /**
-     * Send a message via the system app and system db
-     * 
-     * @param context
-     *            the context
-     * @param dests
-     *            the destination addresses
-     * @param msgText
-     *            the message text
-     * @param threadId
-     *            the message thread id
-     */
-    public SmsMessageSender(Context context, String[] dests, String msgText, long threadId) {
-        mContext = context;
-        mMessageText = msgText;
-        mNumberOfDests = dests.length;
-        mDests = new String[mNumberOfDests];
-        System.arraycopy(dests, 0, mDests, 0, mNumberOfDests);
-        mTimestamp = System.currentTimeMillis();
-        mThreadId = threadId;
-        // mThreadId = threadId > 0 ? threadId
-        // : Threads.getOrCreateThreadId(context,
-        // new HashSet<String>(Arrays.asList(dests)));
-        mServiceCenter = getOutgoingServiceCenter(mThreadId);
-
-        SharedPreferences mPrefs = PreferenceManager.getDefaultSharedPreferences(mContext);
-
-        // Fetch split message pref
-        splitMessage = mPrefs.getBoolean(mContext.getString(R.string.pref_split_message_key), DEFAULT_SPLIT_MESSAGE);
-
-        // Fetch delivery report pref
-        requestDeliveryReport = mPrefs.getBoolean(mContext.getString(R.string.pref_delivery_report_key), DEFAULT_DELIVERY_REPORT_MODE);
-    }
-
-    public boolean sendMessage() {
-        // Don't try to send an empty message.
-        if((mMessageText == null) || (mNumberOfDests == 0)) {
-            return false;
-        }
-
-        SmsManager smsManager = SmsManager.getDefault();
-
-        for(int i = 0; i < mNumberOfDests; i++) {
-            ArrayList<String> messages = smsManager.divideMessage(mMessageText);
-            int messageCount = messages.size();
-            ArrayList<PendingIntent> deliveryIntents = new ArrayList<PendingIntent>(messageCount);
-            ArrayList<PendingIntent> sentIntents = new ArrayList<PendingIntent>(messageCount);
-
-            // Apparently some CDMA networks have a 160 character limit on
-            // sending messages (no
-            // multi-part SMS messages), if splitMessage is true we will break
-            // apart the messages
-            // and send separately.
-            if(splitMessage) {
-                for(int j = 0; j < messageCount; j++) {
-                    Uri uri = null;
-                    try {
-                        uri = addMessage(mContext.getContentResolver(), mDests[i], messages.get(j), null, mTimestamp, requestDeliveryReport, mThreadId);
-                    }
-                    catch(SQLiteException e) {
-                        // TODO: show error here
-                        // SqliteWrapper.checkSQLiteException(mContext, e);
-                    }
-
-                    PendingIntent deliveryReportIntent = null;
-                    if(requestDeliveryReport) {
-                        deliveryReportIntent = PendingIntent.getBroadcast(mContext, 0,
-                                new Intent(MESSAGING_STATUS_RECEIVED_ACTION, uri).setClassName(MESSAGING_PACKAGE_NAME, MESSAGING_STATUS_CLASS_NAME), PendingIntent.FLAG_IMMUTABLE);
-                    }
-
-                    PendingIntent sentIntent = PendingIntent.getBroadcast(mContext, 0,
-                            new Intent(SmsReceiverService.MESSAGE_SENT_ACTION, uri).setClass(mContext, MessageEventReceiver.class), PendingIntent.FLAG_IMMUTABLE);
-
-                    smsManager.sendTextMessage(mDests[i], mServiceCenter, messages.get(j), sentIntent, deliveryReportIntent);
-                }
-
-            }
-            else { // Otherwise send as multipart message
-                Uri uri = null;
-                try {
-                    uri = addMessage(mContext.getContentResolver(), mDests[i], mMessageText, null, mTimestamp, requestDeliveryReport, mThreadId);
-                }
-                catch(SQLiteException e) {
-                    // TODO: show error here
-                    // SqliteWrapper.checkSQLiteException(mContext, e);
-                }
-
-                for(int j = 0; j < messageCount; j++) {
-                    if(requestDeliveryReport) {
-                        deliveryIntents.add(PendingIntent.getBroadcast(mContext, 0,
-                                new Intent(MESSAGING_STATUS_RECEIVED_ACTION, uri).setClassName(MESSAGING_PACKAGE_NAME, MESSAGING_STATUS_CLASS_NAME),
-                                // MessageStatusReceiver.class),
-                                PendingIntent.FLAG_IMMUTABLE));
-                    }
-
-                    sentIntents.add(PendingIntent.getBroadcast(mContext, 0,
-                            new Intent(SmsReceiverService.MESSAGE_SENT_ACTION, uri).setClass(mContext, MessageEventReceiver.class),
-                            // .setClassName(MMS_PACKAGE_NAME,
-                            // MMS_SENT_CLASS_NAME),
-                            // SmsReceiver.class
-                            PendingIntent.FLAG_IMMUTABLE));
-                }
-                if(BuildConfig.DEBUG) Log.v("Sending message in " + messageCount + " parts");
-                smsManager.sendMultipartTextMessage(mDests[i], mServiceCenter, messages, sentIntents, deliveryIntents);
-            }
-        }
-        return false;
-    }
-
-    /**
-     * Get the service center to use for a reply.
-     * 
-     * The rule from TS 23.040 D.6 is that we send reply messages to the service
-     * center of the message to which we're replying, but only if we haven't
-     * already replied to that message and only if <code>TP-Reply-Path</code>
-     * was set in that message.
-     * 
-     * Therefore, return the service center from the most recent message in the
-     * conversation, but only if it is a message from the other party, and only
-     * if <code>TP-Reply-Path</code> is set. Otherwise, return null.
-     */
-    private String getOutgoingServiceCenter(long threadId) {
-        Cursor cursor = null;
-
-        try {
-            cursor = mContext.getContentResolver()
-                    .query(SmsPopupUtils.SMS_CONTENT_URI, SERVICE_CENTER_PROJECTION, "thread_id = " + threadId, null, "date DESC");
-
-            // cursor = SqliteWrapper.query(mContext,
-            // mContext.getContentResolver(),
-            // Sms.CONTENT_URI, SERVICE_CENTER_PROJECTION,
-            // "thread_id = " + threadId, null, "date DESC");
-
-            if((cursor == null) || !cursor.moveToFirst()) {
-                return null;
-            }
-
-            boolean replyPathPresent = (1 == cursor.getInt(COLUMN_REPLY_PATH_PRESENT));
-            return replyPathPresent ? cursor.getString(COLUMN_SERVICE_CENTER) : null;
-        }
-        finally {
-            if(cursor != null) {
-                cursor.close();
-            }
-        }
-    }
-
-    /**
-     * Add an SMS to the Out box.
-     * 
-     * @param resolver
-     *            the content resolver to use
-     * @param address
-     *            the address of the sender
-     * @param body
-     *            the body of the message
-     * @param subject
-     *            the psuedo-subject of the message
-     * @param date
-     *            the timestamp for the message
-     * @param deliveryReport
-     *            whether a delivery report was requested for the message
-     * @return the URI for the new message
-     */
-    public static Uri addMessage(ContentResolver resolver, String address, String body, String subject, Long date, boolean deliveryReport, long threadId) {
-
-        /**
-         * The content:// style URL for this table
-         */
-        final Uri CONTENT_URI = Uri.parse("content://sms/outbox");
-
-        return addMessageToUri(resolver, CONTENT_URI, address, body, subject, date, true, deliveryReport, threadId);
-    }
-
-    /**
-     * Add an SMS to the given URI with thread_id specified.
-     * 
-     * @param resolver
-     *            the content resolver to use
-     * @param uri
-     *            the URI to add the message to
-     * @param address
-     *            the address of the sender
-     * @param body
-     *            the body of the message
-     * @param subject
-     *            the psuedo-subject of the message
-     * @param date
-     *            the timestamp for the message
-     * @param read
-     *            true if the message has been read, false if not
-     * @param deliveryReport
-     *            true if a delivery report was requested, false if not
-     * @param threadId
-     *            the thread_id of the message
-     * @return the URI for the new message
-     */
-    public static Uri addMessageToUri(ContentResolver resolver, Uri uri, String address, String body, String subject, Long date, boolean read,
-            boolean deliveryReport, long threadId) {
-
-        ContentValues values = new ContentValues(7);
-
-        values.put(ADDRESS, address);
-        if(date != null) {
-            values.put(DATE, date);
-        }
-        values.put(READ, read ? Integer.valueOf(1) : Integer.valueOf(0));
-        values.put(SUBJECT, subject);
-        values.put(BODY, body);
-        if(deliveryReport) {
-            values.put(STATUS, STATUS_PENDING);
-        }
-        if(threadId != -1L) {
-            values.put(THREAD_ID, threadId);
-        }
-        return resolver.insert(uri, values);
-    }
-
-    /**
-     * Move a message to the given folder.
-     * 
-     * @param context
-     *            the context to use
-     * @param uri
-     *            the message to move
-     * @param folder
-     *            the folder to move to
-     * @return true if the operation succeeded
-     */
+    // Handles outstanding send callbacks created by earlier extension versions.
     public static boolean moveMessageToFolder(Context context, Uri uri, int folder) {
         if(uri == null) {
             return false;
@@ -384,15 +68,15 @@ public class SmsMessageSender {
         boolean markAsUnread = false;
         boolean markAsRead = false;
         switch(folder) {
-        case MESSAGE_TYPE_INBOX:
-        case MESSAGE_TYPE_DRAFT:
+        case Telephony.Sms.MESSAGE_TYPE_INBOX:
+        case Telephony.Sms.MESSAGE_TYPE_DRAFT:
             break;
-        case MESSAGE_TYPE_OUTBOX:
-        case MESSAGE_TYPE_SENT:
+        case Telephony.Sms.MESSAGE_TYPE_OUTBOX:
+        case Telephony.Sms.MESSAGE_TYPE_SENT:
             markAsRead = true;
             break;
-        case MESSAGE_TYPE_FAILED:
-        case MESSAGE_TYPE_QUEUED:
+        case Telephony.Sms.MESSAGE_TYPE_FAILED:
+        case Telephony.Sms.MESSAGE_TYPE_QUEUED:
             markAsUnread = true;
             break;
         default:
@@ -401,12 +85,12 @@ public class SmsMessageSender {
 
         ContentValues values = new ContentValues(2);
 
-        values.put(TYPE, folder);
+        values.put(Telephony.Sms.TYPE, folder);
         if(markAsUnread) {
-            values.put(READ, Integer.valueOf(0));
+            values.put(Telephony.Sms.READ, Integer.valueOf(0));
         }
         else if(markAsRead) {
-            values.put(READ, Integer.valueOf(1));
+            values.put(Telephony.Sms.READ, Integer.valueOf(1));
         }
 
         int result = 0;
