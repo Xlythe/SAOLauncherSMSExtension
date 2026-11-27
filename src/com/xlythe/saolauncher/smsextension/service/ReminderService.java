@@ -28,13 +28,6 @@ public class ReminderService extends WakefulIntentService {
         super(TAG);
     }
 
-    /*
-     * (non-Javadoc)
-     * 
-     * @see
-     * com.commonsware.cwac.wakeful.WakefulIntentService#doWakefulWork(android
-     * .content.Intent)
-     */
     @Override
     protected void doWakefulWork(Intent intent) {
         if (BuildConfig.DEBUG) Log.v("ReminderReceiverService: handleMessage()");
@@ -108,7 +101,7 @@ public class ReminderService extends WakefulIntentService {
 
             reminderPendingIntent =
                     PendingIntent.getBroadcast(context, 0, reminderIntent,
-                            PendingIntent.FLAG_CANCEL_CURRENT);
+                            PendingIntent.FLAG_CANCEL_CURRENT | PendingIntent.FLAG_IMMUTABLE);
 
             long triggerTime = System.currentTimeMillis() + (reminder_interval * 1000);
             if (BuildConfig.DEBUG)

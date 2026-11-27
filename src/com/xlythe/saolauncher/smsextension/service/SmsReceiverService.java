@@ -391,7 +391,7 @@ public class SmsReceiverService extends WakefulIntentService {
         if (forwardToSystemApp) {
             try {
                 Log.v("SMSReceiver: Broadcasting send complete to system messaging app");
-                PendingIntent.getBroadcast(this, 0, sysIntent, 0).send(mResultCode);
+                PendingIntent.getBroadcast(this, 0, sysIntent, PendingIntent.FLAG_IMMUTABLE).send(mResultCode);
             } catch (CanceledException e) {
                 e.printStackTrace();
             }

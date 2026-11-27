@@ -32,6 +32,7 @@ import android.telephony.SmsManager;
 
 import com.xlythe.saolauncher.smsextension.BuildConfig;
 import com.xlythe.saolauncher.smsextension.R;
+import com.xlythe.saolauncher.smsextension.receiver.MessageEventReceiver;
 import com.xlythe.saolauncher.smsextension.receiver.SmsReceiver;
 import com.xlythe.saolauncher.smsextension.service.SmsReceiverService;
 
@@ -213,11 +214,11 @@ public class SmsMessageSender {
                     PendingIntent deliveryReportIntent = null;
                     if(requestDeliveryReport) {
                         deliveryReportIntent = PendingIntent.getBroadcast(mContext, 0,
-                                new Intent(MESSAGING_STATUS_RECEIVED_ACTION, uri).setClassName(MESSAGING_PACKAGE_NAME, MESSAGING_STATUS_CLASS_NAME), 0);
+                                new Intent(MESSAGING_STATUS_RECEIVED_ACTION, uri).setClassName(MESSAGING_PACKAGE_NAME, MESSAGING_STATUS_CLASS_NAME), PendingIntent.FLAG_IMMUTABLE);
                     }
 
                     PendingIntent sentIntent = PendingIntent.getBroadcast(mContext, 0,
-                            new Intent(SmsReceiverService.MESSAGE_SENT_ACTION, uri).setClass(mContext, SmsReceiver.class), 0);
+                            new Intent(SmsReceiverService.MESSAGE_SENT_ACTION, uri).setClass(mContext, MessageEventReceiver.class), PendingIntent.FLAG_IMMUTABLE);
 
                     smsManager.sendTextMessage(mDests[i], mServiceCenter, messages.get(j), sentIntent, deliveryReportIntent);
                 }
@@ -238,15 +239,15 @@ public class SmsMessageSender {
                         deliveryIntents.add(PendingIntent.getBroadcast(mContext, 0,
                                 new Intent(MESSAGING_STATUS_RECEIVED_ACTION, uri).setClassName(MESSAGING_PACKAGE_NAME, MESSAGING_STATUS_CLASS_NAME),
                                 // MessageStatusReceiver.class),
-                                0));
+                                PendingIntent.FLAG_IMMUTABLE));
                     }
 
                     sentIntents.add(PendingIntent.getBroadcast(mContext, 0,
-                            new Intent(SmsReceiverService.MESSAGE_SENT_ACTION, uri).setClass(mContext, SmsReceiver.class),
+                            new Intent(SmsReceiverService.MESSAGE_SENT_ACTION, uri).setClass(mContext, MessageEventReceiver.class),
                             // .setClassName(MMS_PACKAGE_NAME,
                             // MMS_SENT_CLASS_NAME),
                             // SmsReceiver.class
-                            0));
+                            PendingIntent.FLAG_IMMUTABLE));
                 }
                 if(BuildConfig.DEBUG) Log.v("Sending message in " + messageCount + " parts");
                 smsManager.sendMultipartTextMessage(mDests[i], mServiceCenter, messages, sentIntents, deliveryIntents);

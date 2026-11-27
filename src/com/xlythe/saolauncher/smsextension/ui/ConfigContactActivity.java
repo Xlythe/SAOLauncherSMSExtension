@@ -299,14 +299,13 @@ public class ConfigContactActivity extends PreferenceActivity {
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        switch (item.getItemId()) {
-        case android.R.id.home:
+        int id = item.getItemId();
+        if (id == android.R.id.home) {
             finish();
-            break;
-        case R.id.save_menu_item:
+        } else if (id == R.id.save_menu_item) {
             finish();
             return true;
-        case R.id.remove_menu_item:
+        } else if (id == R.id.remove_menu_item) {
             getContentResolver().delete(
                     ContactNotifications.buildContactUri(rowId), null, null);
             finish();

@@ -49,7 +49,7 @@ public class ClearAllReceiver extends BroadcastReceiver {
      */
     private static PendingIntent getPendingIntent(Context context) {
         return PendingIntent.getBroadcast(
-                context, 0, new Intent(context, ClearAllReceiver.class), 0);
+                context, 0, new Intent(context, ClearAllReceiver.class), PendingIntent.FLAG_IMMUTABLE);
     }
 
     /*

@@ -4,10 +4,12 @@ import com.xlythe.saolauncher.smsextension.BuildConfig;
 import com.xlythe.saolauncher.smsextension.util.Log;
 import com.xlythe.saolauncher.smsextension.util.ManageNotification;
 import com.xlythe.saolauncher.smsextension.util.SmsPopupUtils;
+import android.Manifest;
 import android.app.Service;
 import android.content.ContentResolver;
 import android.content.Context;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.database.ContentObserver;
 import android.net.Uri;
 import android.os.Handler;
@@ -28,7 +30,11 @@ public class SmsMonitorService extends Service {
         super.onCreate();
         context = this.getApplicationContext();
         if (BuildConfig.DEBUG) Log.v("SmsMonitorService created");
-        registerSMSObserver();
+        if (checkSelfPermission(Manifest.permission.READ_SMS) == PackageManager.PERMISSION_GRANTED) {
+            registerSMSObserver();
+        } else {
+            stopSelf();
+        }
     }
 
     @Override

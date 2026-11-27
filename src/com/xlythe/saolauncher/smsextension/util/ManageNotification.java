@@ -10,6 +10,7 @@ import com.xlythe.saolauncher.smsextension.receiver.ReminderReceiver;
 import com.xlythe.saolauncher.smsextension.service.SmsMonitorService;
 import com.xlythe.saolauncher.smsextension.util.ManagePreferences.Defaults;
 import android.app.Notification;
+import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.Context;
@@ -21,9 +22,10 @@ import android.graphics.Typeface;
 import android.media.AudioManager;
 import android.media.MediaPlayer;
 import android.net.Uri;
+import android.os.Build;
 import android.preference.PreferenceManager;
 import android.provider.Settings;
-import android.support.v4.app.NotificationCompat;
+import androidx.core.app.NotificationCompat;
 import android.telephony.TelephonyManager;
 import android.text.Spannable;
 import android.text.SpannableString;
@@ -121,6 +123,10 @@ public class ManageNotification {
 
             if (BuildConfig.DEBUG)
                 Log.v("*** Notify running ***");
+            if (Build.VERSION.SDK_INT >= 26) {
+                myNM.createNotificationChannel(new NotificationChannel("messages",
+                        context.getString(R.string.app_name), NotificationManager.IMPORTANCE_HIGH));
+            }
             myNM.notify(notif, notificationBuilder.build());
         }
     }
@@ -256,7 +262,7 @@ public class ManageNotification {
         // new Notification(R.drawable.stat_notify_sms, scrollText, timestamp);
 
         // Set the PendingIntent if the status message is clicked
-        PendingIntent notifIntent = PendingIntent.getActivity(context, 0, smsIntent, 0);
+        PendingIntent notifIntent = PendingIntent.getActivity(context, 0, smsIntent, PendingIntent.FLAG_IMMUTABLE);
 
         // Set the messages that show when the status bar is pulled down
         n.notificationBuilder
@@ -383,7 +389,7 @@ public class ManageNotification {
          * Ok, let's create our Notification object and set up all its parameters.
          */
         Notification notification = new Notification();
-        NotificationCompat.Builder notificationBuilder = new NotificationCompat.Builder(context);
+        NotificationCompat.Builder notificationBuilder = new NotificationCompat.Builder(context, "messages");
         notificationBuilder.setAutoCancel(true);
 
         /*
@@ -486,7 +492,7 @@ public class ManageNotification {
         // basically stop any future reminders.
         Intent deleteIntent = new Intent(new Intent(context, ReminderReceiver.class));
         deleteIntent.setAction(Intent.ACTION_DELETE);
-        PendingIntent pendingDeleteIntent = PendingIntent.getBroadcast(context, 0, deleteIntent, 0);
+        PendingIntent pendingDeleteIntent = PendingIntent.getBroadcast(context, 0, deleteIntent, PendingIntent.FLAG_IMMUTABLE);
         notificationBuilder.setDeleteIntent(pendingDeleteIntent);
 
         PopupNotification popupNotification = new PopupNotification(notificationBuilder);
@@ -653,7 +659,7 @@ public class ManageNotification {
                 .setWhen(System.currentTimeMillis());
 
         // Set the PendingIntent if the status message is clicked
-        PendingIntent notifIntent = PendingIntent.getActivity(context, 0, smsIntent, 0);
+        PendingIntent notifIntent = PendingIntent.getActivity(context, 0, smsIntent, PendingIntent.FLAG_IMMUTABLE);
 
         // Set the messages that show when the status bar is pulled down
         n.notificationBuilder

@@ -1,8 +1,8 @@
 package com.xlythe.saolauncher.smsextension.util;
 
 import android.os.Bundle;
-import android.support.v4.app.Fragment;
-import android.support.v4.app.FragmentManager;
+import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentManager;
 
 public class RetainFragment extends Fragment {
     
