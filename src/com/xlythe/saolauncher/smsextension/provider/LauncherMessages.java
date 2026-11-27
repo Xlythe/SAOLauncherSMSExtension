@@ -13,6 +13,9 @@ import android.os.Parcel;
 import android.os.ParcelFileDescriptor;
 import android.os.Parcelable;
 import android.text.TextUtils;
+import android.provider.OpenableColumns;
+import android.provider.Telephony;
+import android.telephony.SubscriptionManager;
 
 import com.xlythe.saolauncher.sms.SmsContract;
 import com.xlythe.saolauncher.smsextension.util.SmsMessageSender;
@@ -50,6 +53,28 @@ public class LauncherMessages extends ContentProvider {
     @Override public Cursor query(Uri uri, String[] projection, String selection, String[] args, String sort) {
         long caller = enter();
         try {
+            if (isItem(uri, SmsContract.PART)) {
+                MatrixCursor result = new MatrixCursor(new String[]{OpenableColumns.DISPLAY_NAME});
+                try (Cursor row = getContext().getContentResolver().query(
+                        ContentUris.withAppendedId(Uri.parse("content://mms/part"), ContentUris.parseId(uri)),
+                        new String[]{Telephony.Mms.Part.FILENAME, Telephony.Mms.Part.NAME,
+                                Telephony.Mms.Part.CONTENT_LOCATION}, null, null, null)) {
+                    if (row != null && row.moveToFirst()) {
+                        String name = null;
+                        for (int i = 0; i < row.getColumnCount() && TextUtils.isEmpty(name); i++) {
+                            name = row.getString(i);
+                            if (name != null) {
+                                name = name.replace('\\', '/');
+                                name = name.substring(name.lastIndexOf('/') + 1).replaceAll("[\\p{Cc}\\p{Cf}]", "").trim();
+                                if (name.length() > 160) name = name.substring(0, 160);
+                                if (".".equals(name) || "..".equals(name)) name = null;
+                            }
+                        }
+                        result.addRow(new Object[]{name});
+                    }
+                }
+                return result;
+            }
             TextManager manager = TextManager.getInstance(getContext());
             MatrixCursor result = new MatrixCursor(new String[]{"message"});
             if (uri.equals(SmsContract.URI.buildUpon().appendPath(SmsContract.THREADS).build())) {
@@ -121,10 +146,12 @@ public class LauncherMessages extends ContentProvider {
                     String body = extras.getString(SmsContract.BODY);
                     if (TextUtils.isEmpty(body) || TextUtils.isEmpty(arg)) break;
                     Set<String> addresses;
+                    int subscription = SubscriptionManager.INVALID_SUBSCRIPTION_ID;
                     if (SmsContract.REPLY.equals(method)) {
                         long threadId = Long.parseLong(arg);
                         Thread conversation = manager.getThread(threadId).get();
                         if (conversation == null || conversation.getLatestMessage() == null) break;
+                        subscription = extras.getInt(SmsContract.SUBSCRIPTION, conversation.getLatestMessage().getSubscriptionId());
                         Set<Contact> contacts = manager.getMembersExceptMe(conversation.getLatestMessage()).get();
                         addresses = new HashSet<>();
                         for (Contact contact : contacts) {
@@ -134,7 +161,7 @@ public class LauncherMessages extends ContentProvider {
                         addresses = Collections.singleton(arg);
                     }
                     if (addresses.isEmpty()) break;
-                    result.putBoolean(SmsContract.RESULT, SmsMessageSender.send(getContext(), body, addresses.toArray(new String[0])));
+                    result.putBoolean(SmsContract.RESULT, SmsMessageSender.send(getContext(), body, subscription, addresses.toArray(new String[0])));
                     break;
                 default: throw new IllegalArgumentException("Unknown message operation");
             }
@@ -142,7 +169,15 @@ public class LauncherMessages extends ContentProvider {
         } finally { Binder.restoreCallingIdentity(caller); }
     }
 
-    @Override public String getType(Uri uri) { return null; }
+    @Override public String getType(Uri uri) {
+        if (!isItem(uri, SmsContract.PART)) return null;
+        long caller = enter();
+        try (Cursor part = getContext().getContentResolver().query(
+                ContentUris.withAppendedId(Uri.parse("content://mms/part"), ContentUris.parseId(uri)),
+                new String[]{Telephony.Mms.Part.CONTENT_TYPE}, null, null, null)) {
+            return part != null && part.moveToFirst() ? part.getString(0) : null;
+        } finally { Binder.restoreCallingIdentity(caller); }
+    }
     @Override public Uri insert(Uri uri, ContentValues values) { throw new UnsupportedOperationException(); }
     @Override public int delete(Uri uri, String where, String[] args) { throw new UnsupportedOperationException(); }
     @Override public int update(Uri uri, ContentValues values, String where, String[] args) { throw new UnsupportedOperationException(); }

@@ -23,6 +23,7 @@ import android.net.Uri;
 import android.preference.PreferenceManager;
 import android.provider.Telephony;
 import android.text.TextUtils;
+import android.telephony.SubscriptionManager;
 import android.util.Log;
 
 import com.xlythe.saolauncher.smsextension.R;
@@ -32,10 +33,15 @@ public final class SmsMessageSender {
     private SmsMessageSender() {}
 
     public static boolean send(Context context, String body, String... addresses) {
+        return send(context, body, SubscriptionManager.INVALID_SUBSCRIPTION_ID, addresses);
+    }
+
+    public static boolean send(Context context, String body, int subscription, String... addresses) {
         if (TextUtils.isEmpty(body) || addresses.length == 0) return false;
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
         try {
             TextManager.getInstance(context).send(body)
+                    .usingSubscription(subscription)
                     .separateSmsParts(prefs.getBoolean(context.getString(R.string.pref_split_message_key), false))
                     .requestSmsDeliveryReports(prefs.getBoolean(context.getString(R.string.pref_delivery_report_key), false))
                     .to(addresses);

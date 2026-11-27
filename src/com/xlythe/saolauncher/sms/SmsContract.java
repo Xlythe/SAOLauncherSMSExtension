@@ -21,6 +21,8 @@ public final class SmsContract {
     public static final String READ_THREAD = "readThread", READ_SMS = "readSms", READ_MMS = "readMms";
     public static final String SEND = "send", REPLY = "reply", RESULT = "result", BODY = "body", TEXT = "text";
 
+    public static final String SUBSCRIPTION = "subscription";
+
     private SmsContract() {}
 
     public static boolean installed(Context context) {
