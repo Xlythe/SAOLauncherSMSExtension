@@ -108,7 +108,7 @@ public class ReminderService extends WakefulIntentService {
 
             reminderPendingIntent =
                     PendingIntent.getBroadcast(context, 0, reminderIntent,
-                            PendingIntent.FLAG_CANCEL_CURRENT);
+                            PendingIntent.FLAG_CANCEL_CURRENT | PendingIntent.FLAG_IMMUTABLE);
 
             long triggerTime = System.currentTimeMillis() + (reminder_interval * 1000);
             if (BuildConfig.DEBUG)

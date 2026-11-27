@@ -123,13 +123,11 @@ public class ConfigQuickMessagesActivity extends ListActivity implements OnEdito
      */
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        switch (item.getItemId()) {
-        case android.R.id.home:
+        int id = item.getItemId();
+        if (id == android.R.id.home) {
             finish();
-            break;
-        case R.id.add_menu_item:
+        } else if (id == R.id.add_menu_item) {
             showDialog(ADD_DIALOG);
-            break;
         }
         return super.onOptionsItemSelected(item);
     }

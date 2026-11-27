@@ -7,8 +7,8 @@ import com.xlythe.saolauncher.smsextension.R;
 import com.xlythe.saolauncher.smsextension.provider.SmsMmsMessage;
 import com.xlythe.saolauncher.smsextension.util.Log;
 import android.content.Context;
-import android.support.v4.view.ViewPager;
-import android.support.v4.view.ViewPager.OnPageChangeListener;
+import androidx.viewpager.widget.ViewPager;
+import androidx.viewpager.widget.ViewPager.OnPageChangeListener;
 import android.util.AttributeSet;
 import android.view.GestureDetector;
 import android.view.GestureDetector.SimpleOnGestureListener;
@@ -19,7 +19,7 @@ import android.view.animation.AnimationUtils;
 
 import com.viewpagerindicator.CirclePageIndicator;
 
-public class SmsPopupPager extends ViewPager implements OnPageChangeListener {
+public class SmsPopupPager extends ViewPager {
 
     private ArrayList<SmsMmsMessage> messages;
     private int currentPage;
@@ -47,6 +47,9 @@ public class SmsPopupPager extends ViewPager implements OnPageChangeListener {
         mContext = context;
         messages = new ArrayList<SmsMmsMessage>(5);
         currentPage = 0;
+        addOnPageChangeListener(new SimpleOnPageChangeListener() {
+            @Override public void onPageSelected(int position) { currentPage = position; }
+        });
         setOffscreenPageLimit(1);
         setPageMargin((int) context.getResources().getDimension(R.dimen.smspopup_pager_margin));
         setLongClickable(true);
@@ -203,23 +206,14 @@ public class SmsPopupPager extends ViewPager implements OnPageChangeListener {
         setCurrentItem(getPageCount() - 1);
     }
 
-    @Override
-    public void onPageScrollStateChanged(int state) {}
 
-    @Override
-    public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {
-        super.onPageScrolled(position, positionOffset, positionOffsetPixels);
-    }
 
-    @Override
-    public void onPageSelected(int position) {
-        currentPage = position;
-    }
+
+
 
     public void setIndicator(CirclePageIndicator pagerIndicator) {
         if (pagerIndicator != null) {
             mPagerIndicator = pagerIndicator;
-            mPagerIndicator.setOnPageChangeListener(this);
         }
     }
 

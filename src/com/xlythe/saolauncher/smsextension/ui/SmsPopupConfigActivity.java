@@ -48,6 +48,17 @@ public class SmsPopupConfigActivity extends PreferenceActivity {
         super.onCreate(savedInstanceState);
         
         addPreferencesFromResource(R.xml.preferences);
+        if (savedInstanceState == null) {
+            java.util.ArrayList<String> missing = new java.util.ArrayList<>();
+            for (String permission : new String[] {android.Manifest.permission.RECEIVE_SMS,
+                    android.Manifest.permission.RECEIVE_MMS, android.Manifest.permission.READ_SMS,
+                    android.Manifest.permission.READ_CONTACTS}) {
+                if (checkSelfPermission(permission) != android.content.pm.PackageManager.PERMISSION_GRANTED) missing.add(permission);
+            }
+            if (android.os.Build.VERSION.SDK_INT >= 33 && checkSelfPermission(android.Manifest.permission.POST_NOTIFICATIONS)
+                    != android.content.pm.PackageManager.PERMISSION_GRANTED) missing.add(android.Manifest.permission.POST_NOTIFICATIONS);
+            if (!missing.isEmpty()) requestPermissions(missing.toArray(new String[0]), 1);
+        }
 
         // Try and find app version number
         try {
@@ -333,10 +344,9 @@ public class SmsPopupConfigActivity extends PreferenceActivity {
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        switch (item.getItemId()) {
-        case R.id.email_menu_item:
+        int id = item.getItemId();
+        if (id == R.id.email_menu_item) {
             showDialog(DIALOG_EMAIL);
-            break;
         }
         return super.onOptionsItemSelected(item);
     }

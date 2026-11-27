@@ -28,7 +28,11 @@ public class SmsMonitorService extends Service {
         super.onCreate();
         context = this.getApplicationContext();
         if (BuildConfig.DEBUG) Log.v("SmsMonitorService created");
-        registerSMSObserver();
+        if (checkSelfPermission(android.Manifest.permission.READ_SMS) == android.content.pm.PackageManager.PERMISSION_GRANTED) {
+            registerSMSObserver();
+        } else {
+            stopSelf();
+        }
     }
 
     @Override

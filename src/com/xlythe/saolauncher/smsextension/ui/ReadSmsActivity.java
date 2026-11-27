@@ -9,6 +9,20 @@ public class ReadSmsActivity extends Activity {
     @Override
     protected void onCreate(Bundle bundle) {
         super.onCreate(bundle);
+        if (checkSelfPermission(android.Manifest.permission.READ_SMS) == android.content.pm.PackageManager.PERMISSION_GRANTED) {
+            runOperation();
+        } else if (bundle == null) {
+            requestPermissions(new String[] {android.Manifest.permission.READ_SMS}, 1);
+        }
+    }
+
+    @Override public void onRequestPermissionsResult(int request, String[] names, int[] grants) {
+        super.onRequestPermissionsResult(request, names, grants);
+        if (request == 1 && grants.length > 0 && grants[0] == android.content.pm.PackageManager.PERMISSION_GRANTED) runOperation();
+        else finish();
+    }
+
+    private void runOperation() {
 
         long messageId = -1l;
         int messageType = -1;
