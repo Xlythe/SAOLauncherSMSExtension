@@ -32,6 +32,7 @@ import android.telephony.SmsManager;
 
 import com.xlythe.saolauncher.smsextension.BuildConfig;
 import com.xlythe.saolauncher.smsextension.R;
+import com.xlythe.saolauncher.smsextension.receiver.MessageEventReceiver;
 import com.xlythe.saolauncher.smsextension.receiver.SmsReceiver;
 import com.xlythe.saolauncher.smsextension.service.SmsReceiverService;
 
@@ -217,7 +218,7 @@ public class SmsMessageSender {
                     }
 
                     PendingIntent sentIntent = PendingIntent.getBroadcast(mContext, 0,
-                            new Intent(SmsReceiverService.MESSAGE_SENT_ACTION, uri).setClass(mContext, com.xlythe.saolauncher.smsextension.receiver.MessageEventReceiver.class), PendingIntent.FLAG_IMMUTABLE);
+                            new Intent(SmsReceiverService.MESSAGE_SENT_ACTION, uri).setClass(mContext, MessageEventReceiver.class), PendingIntent.FLAG_IMMUTABLE);
 
                     smsManager.sendTextMessage(mDests[i], mServiceCenter, messages.get(j), sentIntent, deliveryReportIntent);
                 }
@@ -242,7 +243,7 @@ public class SmsMessageSender {
                     }
 
                     sentIntents.add(PendingIntent.getBroadcast(mContext, 0,
-                            new Intent(SmsReceiverService.MESSAGE_SENT_ACTION, uri).setClass(mContext, com.xlythe.saolauncher.smsextension.receiver.MessageEventReceiver.class),
+                            new Intent(SmsReceiverService.MESSAGE_SENT_ACTION, uri).setClass(mContext, MessageEventReceiver.class),
                             // .setClassName(MMS_PACKAGE_NAME,
                             // MMS_SENT_CLASS_NAME),
                             // SmsReceiver.class

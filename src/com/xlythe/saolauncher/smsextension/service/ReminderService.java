@@ -28,13 +28,6 @@ public class ReminderService extends WakefulIntentService {
         super(TAG);
     }
 
-    /*
-     * (non-Javadoc)
-     * 
-     * @see
-     * com.commonsware.cwac.wakeful.WakefulIntentService#doWakefulWork(android
-     * .content.Intent)
-     */
     @Override
     protected void doWakefulWork(Intent intent) {
         if (BuildConfig.DEBUG) Log.v("ReminderReceiverService: handleMessage()");

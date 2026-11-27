@@ -7,13 +7,16 @@ import com.xlythe.saolauncher.smsextension.preferences.DialogPreference;
 import com.xlythe.saolauncher.smsextension.preferences.QuickReplyCheckBoxPreference;
 import com.xlythe.saolauncher.smsextension.util.Eula;
 import com.xlythe.saolauncher.smsextension.util.SmsPopupUtils;
+import android.Manifest;
 import android.app.AlertDialog;
 import android.app.Dialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
 import android.content.pm.PackageManager.NameNotFoundException;
+import android.os.Build;
 import android.os.Bundle;
 import android.preference.CheckBoxPreference;
 import android.preference.Preference;
@@ -33,6 +36,8 @@ import android.view.View.OnClickListener;
 import android.widget.Button;
 import android.widget.Toast;
 
+import java.util.ArrayList;
+
 public class SmsPopupConfigActivity extends PreferenceActivity {
     private static final int DIALOG_DONATE = Menu.FIRST;
     private static final int DIALOG_EMAIL = Menu.FIRST + 1;
@@ -49,14 +54,14 @@ public class SmsPopupConfigActivity extends PreferenceActivity {
         
         addPreferencesFromResource(R.xml.preferences);
         if (savedInstanceState == null) {
-            java.util.ArrayList<String> missing = new java.util.ArrayList<>();
-            for (String permission : new String[] {android.Manifest.permission.RECEIVE_SMS,
-                    android.Manifest.permission.RECEIVE_MMS, android.Manifest.permission.READ_SMS,
-                    android.Manifest.permission.READ_CONTACTS}) {
-                if (checkSelfPermission(permission) != android.content.pm.PackageManager.PERMISSION_GRANTED) missing.add(permission);
+            ArrayList<String> missing = new ArrayList<>();
+            for (String permission : new String[] {Manifest.permission.RECEIVE_SMS,
+                    Manifest.permission.RECEIVE_MMS, Manifest.permission.READ_SMS,
+                    Manifest.permission.READ_CONTACTS}) {
+                if (checkSelfPermission(permission) != PackageManager.PERMISSION_GRANTED) missing.add(permission);
             }
-            if (android.os.Build.VERSION.SDK_INT >= 33 && checkSelfPermission(android.Manifest.permission.POST_NOTIFICATIONS)
-                    != android.content.pm.PackageManager.PERMISSION_GRANTED) missing.add(android.Manifest.permission.POST_NOTIFICATIONS);
+            if (Build.VERSION.SDK_INT >= 33 && checkSelfPermission(Manifest.permission.POST_NOTIFICATIONS)
+                    != PackageManager.PERMISSION_GRANTED) missing.add(Manifest.permission.POST_NOTIFICATIONS);
             if (!missing.isEmpty()) requestPermissions(missing.toArray(new String[0]), 1);
         }
 
@@ -78,14 +83,14 @@ public class SmsPopupConfigActivity extends PreferenceActivity {
         final PreferenceScreen contactsPS =
                 (PreferenceScreen) findPreference(getString(R.string.contacts_key));
         contactsPS.setIntent(
-                new Intent(this, com.xlythe.saolauncher.smsextension.ui.ConfigContactsActivity.class));
+                new Intent(this, ConfigContactsActivity.class));
 
         // Set intent for quick message option
         final PreferenceScreen quickMessagePS =
                 (PreferenceScreen) findPreference(getString(R.string.quickmessages_key));
         quickMessagePS.setIntent(
                 new Intent(this,
-                        com.xlythe.saolauncher.smsextension.ui.ConfigQuickMessagesActivity.class));
+                        ConfigQuickMessagesActivity.class));
 
         // Button 1 preference
         button1 =

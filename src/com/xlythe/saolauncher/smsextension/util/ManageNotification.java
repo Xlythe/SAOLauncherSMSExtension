@@ -10,6 +10,7 @@ import com.xlythe.saolauncher.smsextension.receiver.ReminderReceiver;
 import com.xlythe.saolauncher.smsextension.service.SmsMonitorService;
 import com.xlythe.saolauncher.smsextension.util.ManagePreferences.Defaults;
 import android.app.Notification;
+import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.Context;
@@ -21,6 +22,7 @@ import android.graphics.Typeface;
 import android.media.AudioManager;
 import android.media.MediaPlayer;
 import android.net.Uri;
+import android.os.Build;
 import android.preference.PreferenceManager;
 import android.provider.Settings;
 import androidx.core.app.NotificationCompat;
@@ -121,8 +123,8 @@ public class ManageNotification {
 
             if (BuildConfig.DEBUG)
                 Log.v("*** Notify running ***");
-            if (android.os.Build.VERSION.SDK_INT >= 26) {
-                myNM.createNotificationChannel(new android.app.NotificationChannel("messages",
+            if (Build.VERSION.SDK_INT >= 26) {
+                myNM.createNotificationChannel(new NotificationChannel("messages",
                         context.getString(R.string.app_name), NotificationManager.IMPORTANCE_HIGH));
             }
             myNM.notify(notif, notificationBuilder.build());
