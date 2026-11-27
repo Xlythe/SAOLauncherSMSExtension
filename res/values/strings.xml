@@ -280,4 +280,6 @@
     <string name="pref_led_pattern_entries_normal">Normal</string>
     <string name="pref_led_pattern_entries_slow">Slow</string>
 
+    <string name="message_recipients">Recipients</string>
+    <string name="message_body">Message</string>
 </resources>

@@ -253,7 +253,7 @@ public class SmsMessageSender {
                 smsManager.sendMultipartTextMessage(mDests[i], mServiceCenter, messages, sentIntents, deliveryIntents);
             }
         }
-        return false;
+        return true;
     }
 
     /**

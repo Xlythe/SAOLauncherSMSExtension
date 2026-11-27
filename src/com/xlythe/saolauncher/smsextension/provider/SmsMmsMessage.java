@@ -299,12 +299,12 @@ public class SmsMmsMessage {
     }
 
     public Intent getPopupIntent() {
-        Intent popup = new Intent();
-        if(isPackageExists("com.xlythe.saolauncher")) {
-            popup.setClassName("com.xlythe.saolauncher", "com.xlythe.saolauncher.SmsPopupActivity");
+        Intent popup = new Intent().setClassName("com.xlythe.saolauncher", "com.xlythe.saolauncher.SmsPopupActivity");
+        PackageManager pm = context.getPackageManager();
+        if (pm.checkSignatures(context.getPackageName(), "com.xlythe.saolauncher") == PackageManager.SIGNATURE_MATCH
+                && pm.resolveActivity(popup, 0) != null) {
             popup.putExtras(toBundle());
-        }
-        else {
+        } else {
             popup = new Intent(context, SaoWarningActivity.class);
         }
         popup.setFlags(Intent.FLAG_ACTIVITY_MULTIPLE_TASK | Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_EXCLUDE_FROM_RECENTS);
